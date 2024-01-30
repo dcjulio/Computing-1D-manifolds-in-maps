@@ -1,7 +1,8 @@
 # Computing-1D-manifolds-in-maps
- The package GrowFundCurv1D is an implementation in Matlab of an algorithm for the numerical computation of one-dimensional (un)stable manifolds and intersection points in maps. This is joint work with Hinke. M. Osinga and Bernd Krauskopf. 
- 
- LICENSE: In case you use GrowFundCurv1D in your own research, please, give credit by citing [1]. 
+
+LICENSE: In case you use GrowFundCurv1D in your own research, please, give credit by citing [1]. 
+
+The package GrowFundCurv1D is an implementation in Matlab of an algorithm for the numerical computation of one-dimensional (un)stable manifolds and intersection points in maps. This is joint work with Hinke. M. Osinga and Bernd Krauskopf. 
 
 The package GrowFundCurv1D is an implementation in Matlab of the algorithm presented in [1] for the numerical computation of one-dimensional (un)stable manifolds and intersection points in maps, based on the manifold growth algorithm from [2]. This manual serves as a practical guide for utilising the package GrowFundCurv1D without delving into extensive algorithmic details. We refer to [1] for a comprehensive discussion of the algorithm and its accuracy constraints, as well as more details on its performance.
 
