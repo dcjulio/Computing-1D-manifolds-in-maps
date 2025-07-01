@@ -12,6 +12,6 @@ The package GrowFundCurv1D comprises a series of routines, explained in the comp
 
 The demo GrowFundCurv1D_demo.m, was tested using Matlab [version 9.12 (R2022a)]. This example computes a one-dimensional stable manifold of a fixed point for a three-dimensional Hénon-like map, as defined in [1]. Note that, with appropriate changes to the accuracy settings, the algorithm can accurately compute manifolds not only for the fixed points of the map itself, but also for up to its fourth iterate, without losing resolution.
 
-[1] D. C’Julio, B. Krauskopf, and H.M. Osinga. Computing parametrised large intersection sets of 1D invariant manifolds: a tool for blender detection. Numerical Algorithms 96(3): 1079–1108, 2024; in Collection ANODE 2023 – In honour of John Butcher's 90th birthday.
+[1] D. C’Julio, B. Krauskopf, and H.M. Osinga. Computing parametrised large intersection sets of 1D invariant manifolds: a tool for blender detection. Numerical Algorithms 96(3): 1079–1108, 2024.
 
 [2] B. Krauskopf and H. M. Osinga. Growing 1D and quasi-2D unstable manifolds of maps. Journal of Computational Physics, 146(1): 404–419, 1998.
