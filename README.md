@@ -1,7 +1,7 @@
 # Computing-1D-manifolds-in-maps
 
 
-NOTE: This is the version v2.0.0<br> Some changes have not been reflected in the manual v1.0.0 yet.<br> To browse other versions, click on "Releases" on the right side of the page. There, all the published releases are shown in reverse chronological order.
+NOTE: This is the version v2.0.0. For details on changes from previous versions, please see the CHANGELOG.md file.<br> Some changes have not been reflected in the manual v1.0.0 yet.<br> To browse other versions, click on "Releases" on the right side of the page. There, all the published releases are shown in reverse chronological order.
 
 ---
 LICENSE: In case you use GrowFundCurv1D in your own research, please, give credit by citing [1]. 
