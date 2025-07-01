@@ -1,10 +1,11 @@
 ### What’s new in v2.0.0
 1. Manifold initialisation is now handled directly in the GrowFundCurv1D function — it no longer requires an initial segment computed externally.
 2. Updated syntax for accessing manifold points. They are now manif.points.pos and manif.points.neg, replacing the old manif.pointspos and manif.pointsneg.
-2. Users can define both the final arclength of the manifold to compute and/or a maximum number of fundamental domain iterations. The algorithm will grow the manifold up to the specified arclength unless it reaches the iteration limit first.
-3. For orientation-reversing manifolds (with negative eigenvalues), the algorithm now computes both branches using the first iterate of the map. In v1.0.0, it used the second iteration of the map and handled each branch separately.
-4. The algorithm now stores the indices corresponding to each fundamental domain or segment.
-5. The inter_planes function no longer adds intersection points directly to the manifold. Instead, it records each intersection point along with the index of the preceding point in the manifold that intersected the plane.
+3. Users can define both the final arclength of the manifold to compute and/or a maximum number of fundamental domain iterations. The algorithm will grow the manifold up to the specified arclength unless it reaches the iteration limit first.
+4. You can now add new branches to an already computed manifold by calling the function "add_branch".
+5. For orientation-reversing manifolds (with negative eigenvalues), the algorithm now computes both branches using the first iterate of the map. In v1.0.0, it used the second iteration of the map and handled each branch separately.
+6. The algorithm now stores the indices corresponding to each fundamental domain or segment.
+7. The inter_planes function no longer adds intersection points directly to the manifold. Instead, it records each intersection point along with the index of the preceding point in the manifold that intersected the plane.
 
 ### Important Warnings:
 Discontinuity Alert: A WARNING will now be printed if the distance between the last point of the previous segment and the first point of the new segment exceeds Delta_min. This indicates a potential discontinuity in the manifold.
