@@ -4,7 +4,7 @@
 NOTE:<br> This is version v2.0.0.<br>
 See the file CHANGELOG for changes between sub-versions.<br>
 Note that some changes have not been reflected in the manual v1.0.0 yet.<br>
-To browse other versions, click on "Releases" on the right side of the page. There, all the published releases are shown in reverse chronological order.
+To browse other previous versions, click on "Releases" on the right side of the page. There, all the published releases are shown in reverse chronological order.
 
 ---
 LICENSE: In case you use GrowFundCurv1D in your own research, please, give credit by citing [1]. 
