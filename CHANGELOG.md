@@ -6,6 +6,6 @@
 4. The algorithm now stores the indices corresponding to each fundamental domain or segment.
 5. The inter_planes function no longer adds intersection points directly to the manifold. Instead, it records each intersection point along with the index of the preceding point in the manifold that intersected the plane.
 
-Important Warnings:
+### Important Warnings:
 Discontinuity Alert: A WARNING will now be printed if the distance between the last point of the previous segment and the first point of the new segment exceeds Delta_min. This indicates a potential discontinuity in the manifold.
 Accuracy Check: The system will now issue a WARNING if the accuracy conditions are not met between two concatenated fundamental domains, signalling a potential precision issue.
