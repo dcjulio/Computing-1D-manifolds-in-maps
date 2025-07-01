@@ -4,29 +4,29 @@ classdef StdHenon3D
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%% MAPPING %%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function outpoints = mapping(inpoints,stab,opts)
+        function outpoints = mapping(inpoints,opts,mapiter)
             %manif.points: coordinates x,y,z
-            %manif.stab: 'Umanifold' or 'Smanifold'
+            %mapiter: integer. neg for preimage(Smanifold), pos for image(Umanifold)
+            thesystem=opts.thesystem;
             points=inpoints;
-            for i=1:opts.mapiter % time the map is applied
+
+
+            for i=1:abs(mapiter) % time the map is applied
 
                 %decompactify
-                decomp_points=StdHenon3D.decompactify(points);
+                decomp_points=thesystem.decompactify(points);
 
-                % using map or inverse map depending on the stability of the manifold
-                if isequal('Umanifold',stab)
-                    map_points=StdHenon3D.ff(decomp_points,opts);
+                if mapiter>0 %image (associated with Wu)
+                    map_points=thesystem.ff(decomp_points,opts);
 
-                elseif isequal('Smanifold',stab)
-                    map_points=StdHenon3D.ff_inv(decomp_points,opts);
-
-                else
-                    fprintf('\nError!: Stability is not defined correctly. \nUse Smanifold for stable or Umanifold for unstable\n')
-                    break; 
+                else %preimage (associated with Ws)
+                    map_points=thesystem.ff_inv(decomp_points,opts);
+                    
                 end
+                
 
                 %compactify
-                points=StdHenon3D.compactify(map_points); 
+                points=thesystem.compactify(map_points); 
 
             end
             outpoints=points;
@@ -90,6 +90,8 @@ classdef StdHenon3D
         % > -------- fixed points 
         function fixpinfo=fixpoints(opts)
 
+            thesystem=opts.thesystem;
+
             a=opts.par.a;
             b=opts.par.b;
             xi=opts.par.xi;
@@ -111,7 +113,7 @@ classdef StdHenon3D
              % computing them in compactified coordinates
              fixp_names=fieldnames(fixpinfo);
              for k=1:numel(fixp_names) 
-                 fixpinfo.(fixp_names{k})=StdHenon3D.compactify(fixpinfo.(fixp_names{k}));
+                 fixpinfo.(fixp_names{k})=thesystem.compactify(fixpinfo.(fixp_names{k}));
              end
             
 
@@ -158,17 +160,21 @@ classdef StdHenon3D
         
         function inv_points=invmap_comp(points,opts)
 
-            decomp=StdHenon3D.decompactify(points);
-            inv=StdHenon3D.ff_inv(decomp,opts);
-            inv_points=StdHenon3D.compactify(inv);
+            thesystem=opts.thesystem;
+
+            decomp=thesystem.decompactify(points);
+            inv=thesystem.ff_inv(decomp,opts);
+            inv_points=thesystem.compactify(inv);
 
         end
         
         function inv_points=map_comp(points,opts)
 
-            decomp=StdHenon3D.decompactify(points);
-            inv=StdHenon3D.ff(decomp,opts);
-            inv_points=StdHenon3D.compactify(inv);
+            thesystem=opts.thesystem;
+
+            decomp=thesystem.decompactify(points);
+            inv=thesystem.ff(decomp,opts);
+            inv_points=thesystem.compactify(inv);
 
         end
 
