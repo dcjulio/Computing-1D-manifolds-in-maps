@@ -687,7 +687,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
             % plot3(mappoints.x(1),mappoints.y(1),mappoints.z(1),'.k','MarkerSize',30)
             % plot3(mappoints.x(1:5),mappoints.y(1:5),mappoints.z(1:5),'.-','LineWidth',2,'MarkerSize',10)
     
-            fprintf('\n Warning! Delta*Alpha %e or %e between fund domains is larger than DeltaAlphaMax %e.\n Alpha=%e, Delta0=%e, Delta1=%e.\n The point is at x=%f y=%f z=%f\n\n', alpha*delta0, alpha*delta1, alpha,delta0,delta1, manif.grow_info.deltalphamax, mappoints.x(1), mappoints.y(1), mappoints.z(1)) 
+            fprintf('\n Warning! Delta*Alpha %e or %e between fund domains is larger than DeltaAlphaMax %e.\n Alpha=%e, Delta0=%e, Delta1=%e.\n The point is at x=%f y=%f z=%f\n\n', alpha*delta0, alpha*delta1, manif.grow_info.deltalphamax, alpha, delta0,delta1, mappoints.x(1), mappoints.y(1), mappoints.z(1)) 
             prompt = "\n... Press something to continue\n\n";
             x = input(prompt);
         end
@@ -702,6 +702,15 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
     %chop the manifold up to the desired arclength
     if fund.points.arc(end) > needed_arc
+
+        %erase duplicates (needed for spline fitting)
+        keep=find(diff(fund.points.arc)~=0);
+        fund.points.x=fund.points.x(keep);
+        fund.points.y=fund.points.y(keep);
+        fund.points.z=fund.points.z(keep);
+        fund.points.arc=fund.points.arc(keep);
+        % idx_eps_preimages=idx_eps_preimages(keep);
+
          idx_arc = find(fund.points.arc < needed_arc, 1, 'last'); %find last point that is less than the needed arc
 
          % chop the fund domain and the mappoints up to the needed arclength
@@ -711,6 +720,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
          fund.points.arc = arclength(fund.points);
     end
 
+    
     fprintf(' Fund domain arclength %.1f \n', fund.points.arc(end));
 
 
