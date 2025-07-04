@@ -188,7 +188,7 @@ fprintf(' Starting fundamental domain arclength  %f\n',fund.points.arc(end))
 Manif=manif;
 
 %----------- Starting the loop
-warning = 0;  %to know if we went to some warnning
+
 iter=0;
 stop_arc=0; % flag to stop iterating if we reached the desired arclength
 stop_arc_branch2 = 0; % flag to stop iterating if we reached the desired arclength (neg branch)
@@ -287,11 +287,11 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
             % fprintf('dist %.e\n', dist)
         
             % check distance
-            if dist > Manif.grow_info.deltamin && warning < 4
-                warning = warning+1;
+            if dist > Manif.grow_info.deltamin 
+
                 fprintf('Warning! The distance between the first point of the current mapped segment and the last point of the previous segment exceeds Deltamin. Current distance: %.e %.e\n', dist)
-                prompt = "\n... Press something to continue\n\n";
-                x = input(prompt);
+                % prompt = "\n... Press something to continue\n\n";
+                % x = input(prompt);
             end
 
 
@@ -653,8 +653,8 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         % check distance
         if first_return_dist > abs(Manif.grow_info.init_step)
             fprintf('Warning! the distance between last point of initial segment and its first return is greater than the initial step %e It is %e\n\n',Manif.grow_info.init_step, first_return_dist)
-            prompt = "\n... Press something to continue\n\n";
-            x = input(prompt);
+            % prompt = "\n... Press something to continue\n\n";
+            % x = input(prompt);
         end
 
         % make the new segment start at the end of the first intial segment
@@ -688,8 +688,9 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
             % plot3(mappoints.x(1:5),mappoints.y(1:5),mappoints.z(1:5),'.-','LineWidth',2,'MarkerSize',10)
     
             fprintf('\n Warning! Delta*Alpha %e or %e between fund domains is larger than DeltaAlphaMax %e.\n Alpha=%e, Delta0=%e, Delta1=%e.\n The point is at x=%f y=%f z=%f\n\n', alpha*delta0, alpha*delta1, manif.grow_info.deltalphamax, alpha, delta0,delta1, mappoints.x(1), mappoints.y(1), mappoints.z(1)) 
-            prompt = "\n... Press something to continue\n\n";
-            x = input(prompt);
+            % prompt = "\n... Press something to continue\n\n";
+            % x = input(prompt);
+
         end
     end
 
@@ -720,7 +721,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
          fund.points.arc = arclength(fund.points);
     end
 
-    
+
     fprintf(' Fund domain arclength %.1f \n', fund.points.arc(end));
 
 
