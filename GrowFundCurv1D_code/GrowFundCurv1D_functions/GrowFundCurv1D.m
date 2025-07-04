@@ -665,30 +665,32 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
     end
 
-    % plot3(mappoints.x,mappoints.y,mappoints.z,'.-','LineWidth',2,'MarkerSize',10)
-
-    %check the angles of new fundamental domain with previous one
-    % coordinates of mapped points
-    p0=[Manif.points.(branch).x(end-1), Manif.points.(branch).y(end-1), Manif.points.(branch).z(end-1)];
-    p1=[mappoints.x(1), mappoints.y(1), mappoints.z(1)]; % the point we are actually looking at
-    p2=[mappoints.x(2), mappoints.y(2), mappoints.z(2)];
-    delta0=norm(p1-p0); % before
-    delta1=norm(p1-p2); % after
-    alpha = angles(p0,p1,p2); % angle btw points
-
-
-    if (alpha*delta0 > manif.grow_info.deltalphamax || alpha*delta1 > manif.grow_info.deltalphamax )
-
-        % figure
-        % hold on
-        % plot3(Manif.points.(branch).x(end-5:end),Manif.points.(branch).y(end-5:end),Manif.points.(branch).z(end-5:end),'.-','LineWidth',2,'MarkerSize',10)
-        % plot3(Manif.points.(branch).x(end),Manif.points.(branch).y(end),Manif.points.(branch).z(end),'.k','MarkerSize',30)
-        % plot3(mappoints.x(1),mappoints.y(1),mappoints.z(1),'.k','MarkerSize',30)
-        % plot3(mappoints.x(1:5),mappoints.y(1:5),mappoints.z(1:5),'.-','LineWidth',2,'MarkerSize',10)
-
-        fprintf('\n Warning! Delta*Alpha %e or %e between fund domains is larger than DeltaAlphaMax %e.\n Alpha=%e, Delta0=%e, Delta1=%e.\n The point is at x=%f y=%f z=%f\n\n', alpha*delta0, alpha*delta1, alpha,delta0,delta1, manif.grow_info.deltalphamax, mappoints.x(1), mappoints.y(1), mappoints.z(1)) 
-        prompt = "\n... Press something to continue\n\n";
-        x = input(prompt);
+    if iter >= mapiter %if there is already a segment on that branch
+        % plot3(mappoints.x,mappoints.y,mappoints.z,'.-','LineWidth',2,'MarkerSize',10)
+    
+        %check the angles of new fundamental domain with previous one
+        % coordinates of mapped points
+        p0=[Manif.points.(branch).x(end-1), Manif.points.(branch).y(end-1), Manif.points.(branch).z(end-1)];
+        p1=[mappoints.x(1), mappoints.y(1), mappoints.z(1)]; % the point we are actually looking at
+        p2=[mappoints.x(2), mappoints.y(2), mappoints.z(2)];
+        delta0=norm(p1-p0); % before
+        delta1=norm(p1-p2); % after
+        alpha = angles(p0,p1,p2); % angle btw points
+    
+    
+        if (alpha*delta0 > manif.grow_info.deltalphamax || alpha*delta1 > manif.grow_info.deltalphamax )
+    
+            % figure
+            % hold on
+            % plot3(Manif.points.(branch).x(end-5:end),Manif.points.(branch).y(end-5:end),Manif.points.(branch).z(end-5:end),'.-','LineWidth',2,'MarkerSize',10)
+            % plot3(Manif.points.(branch).x(end),Manif.points.(branch).y(end),Manif.points.(branch).z(end),'.k','MarkerSize',30)
+            % plot3(mappoints.x(1),mappoints.y(1),mappoints.z(1),'.k','MarkerSize',30)
+            % plot3(mappoints.x(1:5),mappoints.y(1:5),mappoints.z(1:5),'.-','LineWidth',2,'MarkerSize',10)
+    
+            fprintf('\n Warning! Delta*Alpha %e or %e between fund domains is larger than DeltaAlphaMax %e.\n Alpha=%e, Delta0=%e, Delta1=%e.\n The point is at x=%f y=%f z=%f\n\n', alpha*delta0, alpha*delta1, alpha,delta0,delta1, manif.grow_info.deltalphamax, mappoints.x(1), mappoints.y(1), mappoints.z(1)) 
+            prompt = "\n... Press something to continue\n\n";
+            x = input(prompt);
+        end
     end
 
 %---%----------- Final section: save info
