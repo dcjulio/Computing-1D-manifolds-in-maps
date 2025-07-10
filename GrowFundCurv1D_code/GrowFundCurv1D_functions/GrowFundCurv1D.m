@@ -378,9 +378,11 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
 
 
-    %if is the NOT the first segment of manifold on that branch
+
+    %if is the NOT the first segment of manifold on that branch and is not
+    %the first return, then
     %we also take into account the point at the end of the previous fund domain 
-    if iter >= mapiter 
+    if iter > mapiter 
         mappoints.x = [Manif.points.(branch).x(end-1) mappoints.x];
         mappoints.y = [Manif.points.(branch).y(end-1) mappoints.y]; 
         mappoints.z = [Manif.points.(branch).z(end-1) mappoints.z]; 
@@ -463,7 +465,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
             %------ If it is the second point in the mesh and first segment in the branch
             %------ Check the first delta and add a point before if needed
-            if k==2 && iter < mapiter && add_acc.delta0>manif.grow_info.deltamax  
+            if k==2 && iter <= mapiter && add_acc.delta0>manif.grow_info.deltamax  
 
                 %add point p01
                 add_acc.add    =[add_acc.add k-1]; %idx of the point we are going to add
@@ -484,7 +486,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
             %------ If alpha fails or BOTH Delta*alpha fail
             %------ Choose where to add a point.
             %-- Only if: we are either on the first segment, or k is not 2 (iter < mapiter || k~=2)
-            elseif (iter < mapiter || k~=2) && (add_acc.alpha>=manif.grow_info.alphamax || (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax)) %1 
+            elseif (iter <= mapiter || k~=2) && (add_acc.alpha>=manif.grow_info.alphamax || (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax)) %1 
 
             %------ Add point where Delta>Deltamin
                 
@@ -552,7 +554,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
             %------ Delta0*alpha > max, and Delta0 > Deltamin
             %------ Add a point btw p0 and p1
             %-- Only if: we are either on the first segment, or k is not 2 (iter < mapiter || k~=2)
-            elseif (iter < mapiter || k~=2) && (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta0>manif.grow_info.deltamin)
+            elseif (iter <= mapiter || k~=2) && (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta0>manif.grow_info.deltamin)
                 % Add a point if we didnt added the point in the previous acc cond checks
                 if numel(add_acc.add)==0 || add_acc.add(end)~=k-1
                     add_acc.add    =[add_acc.add k-1];  %idx of the point we are going to add
@@ -618,7 +620,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
     % if there this is not the first segment on the branch, then update
     % mappoint so it doesn't contain previous fundamental domain
-    if iter >= mapiter
+    if iter > mapiter
         mappoints.x=mappoints.x(2:end);
         mappoints.y=mappoints.y(2:end);
         mappoints.z=mappoints.z(2:end);
