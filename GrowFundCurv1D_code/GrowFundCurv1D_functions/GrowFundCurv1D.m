@@ -378,7 +378,6 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
 
 
-
     %if is the NOT the first segment of manifold on that branch and is not
     %the first return, then
     %we also take into account the point at the end of the previous fund domain 
@@ -397,226 +396,313 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
 
     % Interpolation mesh
-    t_initial=0:1/(numel(fund_initial.x)-1):1; % parametrization for meshpoints
+    t_initial=0:(numel(fund_initial.x)-1); % parametrization for meshpoints
+
+% %to plot the points we added
+% first_iter=mappoints;
 
 %---%-------------- Loop of the same mesh checking acc cond (this adds points)
     while add_acc.loop 
 %---%--------------
-        add_acc.loop=false; %to stop while loop % if at least one point is added this turns true
-        add_acc.iter=add_acc.iter+1; %counter of iterations
+        add_acc.loop = false; %to stop while loop % if at least one point is added this turns true
+        add_acc.iter = add_acc.iter + 1; %counter of iterations
 
 
         % Interpolating points from previous fundamental domain.
-         if add_acc.iter==1
-            tt=t_initial;
-            t_interp=tt(1:end-1)+(tt(2:end)-tt(1:end-1))/2; % parametrization of interpolated points
-            interp = makima3D(fund_initial,t_initial,t_interp); % compute interpolated preimage
-            mapinterp = thesystem.mapping(interp,opts,sign); % interpolated image
-         else
-             tt=sort([tt t_interp(add_acc.add)]); %parametrization of (new) mesh points
-             t_interp=tt(1:end-1)+(tt(2:end)-tt(1:end-1))/2; % parametrization of (new) interpolated points
-             interp = makima3D(fund_initial,t_initial,t_interp); % compute interpolated preimage
-             mapinterp = thesystem.mapping(interp,opts,sign); % interpolated image
+         if add_acc.iter == 1
+            tt        = t_initial;
+            t_interp  = tt(1:end-1) + (tt(2:end)-tt(1:end-1))/2; % parametrization of interpolated points
+            interp    = makima3D(fund_initial, t_initial, t_interp); % compute interpolated preimage
+            mapinterp = thesystem.mapping(interp, opts, sign); % interpolated image
+         else 
+             tt        = sort([tt t_interp(add_acc.add_idx)]); %parametrization of (new) mesh points
+             t_interp  = tt(1:end-1) + (tt(2:end) - tt(1:end-1))/2; % parametrization of (new) interpolated points
+             interp    = makima3D(fund_initial, t_initial, t_interp); % compute interpolated preimage
+             mapinterp = thesystem.mapping(interp, opts, sign); % interpolated image
          end
 
-         
+
 %%
-        add_acc.add=[]; %points we are going to add
+
+% figure
+% plot(mappoints.x, mappoints.y,'.-','LineWidth',2,'MarkerSize',10)
+        add_acc.add_idx = []; %points we are going to add
+        add_acc.add_new = zeros(size(mapinterp.x));
 
         % idx of points to check acc cond
         if add_acc.iter == 1 %if its the first time checking the acc conditions 
             for_idx = 2:(numel(mappoints.x)-1);
         else
-            for_idx=add_acc.failed;
-        end      
+            for_idx = add_acc.failed;
+        end   
+
+
 
         fprintf('  loop number %i (points to check %i...',add_acc.iter,numel(for_idx));
 %-------%---------- Going through the points that failed
-        million=0;
-        for k=for_idx
-%-------%----------      
-            % a flag for when # million points have been checked
-            million=million+1;
 
-            if floor(million/1000000)==ceil(million/1000000) %is integer?
-                fprintf(' -checkpoint %i million points checked-...',floor(million/1000000));
-            end
+    % coordinates of mapped points
+        add_acc.p0=[mappoints.x(for_idx-1); mappoints.y(for_idx-1); mappoints.z(for_idx-1)];
+        add_acc.p1=[mappoints.x(for_idx); mappoints.y(for_idx); mappoints.z(for_idx)];
+        add_acc.p2=[mappoints.x(for_idx+1); mappoints.y(for_idx+1); mappoints.z(for_idx+1)];
 
-                
-            % coordinates of mapped points
-            add_acc.p0=[mappoints.x(k-1), mappoints.y(k-1), mappoints.z(k-1)];
-            add_acc.p1=[mappoints.x(k),   mappoints.y(k),   mappoints.z(k)]; % the point we are actually looking at
-            add_acc.p2=[mappoints.x(k+1), mappoints.y(k+1), mappoints.z(k+1)];
-            
-            % Distance btw points
-            add_acc.delta0=norm(add_acc.p1-add_acc.p0); % before
-            add_acc.delta2=norm(add_acc.p1-add_acc.p2); % after
-            add_acc.alpha = angles(add_acc.p0,add_acc.p1,add_acc.p2); % angle btw points
-            
-            % points btw p0p1 and p1p2 in the interpolated points
-            add_acc.p0_new=[mapinterp.x(k-1), mapinterp.y(k-1), mapinterp.z(k-1)];
-            add_acc.p2_new=[mapinterp.x(k), mapinterp.y(k), mapinterp.z(k)];
-    
+        % Distance btw points
+        add_acc.delta0=vecnorm(add_acc.p1-add_acc.p0,2); % before
+        add_acc.delta2=vecnorm(add_acc.p1-add_acc.p2,2); % after
+        add_acc.alpha = angles(add_acc.p0, add_acc.p1, add_acc.p2); % angle at p1: btw p0, p1 and p2
 
+        % points btw p0p1 and p1p2 in the interpolated points
+        add_acc.q0=[mapinterp.x(for_idx-1); mapinterp.y(for_idx-1); mapinterp.z(for_idx-1)];
+        add_acc.q2=[mapinterp.x(for_idx); mapinterp.y(for_idx); mapinterp.z(for_idx)];
+        
+        
 %-----------%------ Adding points
 
 
 %-----------%------ If delta > deltamax 
 
-            %------ If it is the second point in the mesh and first segment in the branch
             %------ Check the first delta and add a point before if needed
-            if k==2 && iter <= mapiter && add_acc.delta0>manif.grow_info.deltamax  
+            %------ Only if it is the first segment on that branch (iter <= mapiter). Because for successive branches, the first point on the mesh is actually the second to last point from the previous segment to check the angle between the two segments
+            condition1 = (iter <= mapiter) & add_acc.delta0(1)>manif.grow_info.deltamax;
+            if condition1
 
-                %add point p01
-                add_acc.add    =[add_acc.add k-1]; %idx of the point we are going to add
-                add_acc.loop=true; % We have to check if we need to put more points in the mesh
-                Manif.grow_info.runinf.add_deltamax=Manif.grow_info.runinf.add_deltamax+1;
+                %add one point btw p0 and p1 
+                add_acc.add_new(1) = 1;
                 
+                % fprintf('\n flag Delta0')
+            end
+
             %------ Check the second delta and add a point after if needed
-            elseif add_acc.delta2>manif.grow_info.deltamax %k>2 && add_acc.delta2>manif.grow_info.deltamax
-                %add point p12
-                add_acc.add    =[add_acc.add k]; %idx of the point we are going to add
-                add_acc.loop=true; %idx of the point we are going to add
-                Manif.grow_info.runinf.add_deltamax=Manif.grow_info.runinf.add_deltamax+1;
-           
+            %-- Add a point btw p1 and p2 [for_idx]
+            condition2 = add_acc.delta2 > manif.grow_info.deltamax; 
+            if any(condition2)
+
+                cond2_idx = false(size(add_acc.add_new));
+                cond2_idx(for_idx(condition2)) = true;
                 
-                
+                add_acc.add_new(add_acc.add_new == 0 & cond2_idx) = 2; 
+                % fprintf('\n flag Delta2')
+            end
+
+
 %-----------%------ If alpha > alphamax  or   Delta*alpha > Delta*alpha max
 
             %------ If alpha fails or BOTH Delta*alpha fail
-            %------ Choose where to add a point.
-            %-- Only if: we are either on the first segment, or k is not 2 (iter < mapiter || k~=2)
-            elseif (iter <= mapiter || k~=2) && (add_acc.alpha>=manif.grow_info.alphamax || (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax)) %1 
+            %------ Choose where to add a point, if for k or k+1.
+
+            condition3 = add_acc.alpha >= manif.grow_info.alphamax;
+            condition4 = add_acc.delta0.*add_acc.alpha >= manif.grow_info.deltalphamax & add_acc.delta2.*add_acc.alpha >= manif.grow_info.deltalphamax;
+            if any(condition3) || any(condition4)
+                % fprintf('\nflag1\n');
+
+
+            %-- Add a point btw p0 and p1 [for_idx-1]
+            cond3_idx_p0p1 = false(size(add_acc.add_new));
+            cond3_idx_p0p1(for_idx(condition3)-1) = true;
+
+            cond4_idx_p0p1 = false(size(add_acc.add_new));
+            cond4_idx_p0p1(for_idx(condition4)-1) = true;
+
+            %-- Add a point btw p1 and p2 [for_idx]
+            cond3_idx_p1p2 = false(size(add_acc.add_new));
+            cond3_idx_p1p2(for_idx(condition3)) = true;
+
+            cond4_idx_p1p2 = false(size(add_acc.add_new));
+            cond4_idx_p1p2(for_idx(condition4)) = true;
+
+
+                % fprintf('\n flag alpha fails or BOTH Delta*alpha fail')
 
             %------ Add point where Delta>Deltamin
-                
-                %-- If only Delta0>Deltamin and it is not
-                %-- Add a point btw p0 and p1
-                    if add_acc.delta0>manif.grow_info.deltamin && add_acc.delta2<manif.grow_info.deltamin
-                        % Add a point if we didnt added the point in the previous acc cond checks
-                        if numel(add_acc.add)==0 || add_acc.add(end)~=k-1
-                            add_acc.add    =[add_acc.add k-1];  %idx of the point we are going to add
-                            add_acc.loop=true; %idx of the point we are going to add
-                            if (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax) 
-                                Manif.grow_info.runinf.add_deltalphamax=Manif.grow_info.runinf.add_deltalphamax+1;
-                            else
-                                Manif.grow_info.runinf.add_alphamax=Manif.grow_info.runinf.add_alphamax+1;
-                            end
-                        end
+
+                %-- If only Delta0>Deltamin
+                %-- Add a point btw p0 and p1 [for_idx-1]
+                    condition41 = add_acc.delta0 > manif.grow_info.deltamin & add_acc.delta2 < manif.grow_info.deltamin;
+                    if any(condition41)
+                        % fprintf('\nflag41\n');
+
+                        cond41_idx = false(size(add_acc.add_new));
+                        cond41_idx(for_idx(condition41)-1) = true;
+
+                        iszero1 = add_acc.add_new == 0;               % we did not add a point already at that index
+                        iszero2 = [add_acc.add_new(2:end) == 0 true]; % we also did not add a point at idx+1
+
+                        % fprintf('\n only Delta0>Deltamin')
+                        add_acc.add_new(iszero1 & iszero2 & cond3_idx_p0p1 & cond41_idx) = 3; % fail because of alpha
+                        add_acc.add_new(iszero1 & iszero2 & cond4_idx_p0p1 & cond41_idx) = 4; % fail because of delta0*alpha and delta2*alpha
+
                     end
 
                 %-- If only Delta2>Deltamin
-                %-- Add a point btw p1 and p2
-                if add_acc.delta2>manif.grow_info.deltamin && add_acc.delta0<manif.grow_info.deltamin
-                    %add point p12
-                    add_acc.add    =[add_acc.add k]; %idx of the point we are going to add
-                    add_acc.loop=true; %idx of the point we are going to add
-                    if (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax) 
-                        Manif.grow_info.runinf.add_deltalphamax=Manif.grow_info.runinf.add_deltalphamax+1;
-                    else
-                        Manif.grow_info.runinf.add_alphamax=Manif.grow_info.runinf.add_alphamax+1;
-                    end
+                %-- Add a point btw p1 and p2 [for_idx]
+                condition42 = add_acc.delta2 > manif.grow_info.deltamin & add_acc.delta0 < manif.grow_info.deltamin;
+                if any(condition42)
+                    % fprintf('\nflag42\n');
+
+                    cond42_idx = false(size(add_acc.add_new));
+                    cond42_idx(for_idx(condition42)) = true;
+
+                    iszero1 = add_acc.add_new == 0;                 % we did not add a point already at that index
+                    iszero0 = [true add_acc.add_new(1:end-1) == 0]; % we also did not add a point at idx-1
+
+                    % fprintf('\n only Delta2>Deltamin')
+                    add_acc.add_new(iszero1 & iszero0 & cond3_idx_p1p2 & cond42_idx) = 3; % fail because of alpha
+                    add_acc.add_new(iszero1 & iszero0 & cond4_idx_p1p2 & cond42_idx) = 4; % fail because of delta0*alpha and delta2*alpha
+                    
                 end
-                
+
                 %-- If both Delta0 and Delta 2 > Deltamin
                 %-- Choose where to add point
-                if add_acc.delta2>manif.grow_info.deltamin && add_acc.delta0>manif.grow_info.deltamin
-                    add_acc.alpha0_new = angles(add_acc.p0_new,add_acc.p1,add_acc.p2); % angle btw points
-                    add_acc.alpha2_new = angles(add_acc.p0,add_acc.p1,add_acc.p2_new); 
+                condition43 = add_acc.delta2 > manif.grow_info.deltamin & add_acc.delta0 > manif.grow_info.deltamin;
+                if any(condition43)
+                    % fprintf('\nflag43\n');
 
-                    if add_acc.alpha0_new < add_acc.alpha2_new 
-                        % Add a point if we didnt added the point in the previous acc cond checks
-                        if numel(add_acc.add)==0 || add_acc.add(end)~=k-1
-                            add_acc.add    =[add_acc.add k-1];  %idx of the point we are going to add
-                            add_acc.loop=true; %idx of the point we are going to add
-                            if (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax) 
-                                Manif.grow_info.runinf.add_deltalphamax=Manif.grow_info.runinf.add_deltalphamax+1;
-                            else
-                                Manif.grow_info.runinf.add_alphamax=Manif.grow_info.runinf.add_alphamax+1;
-                            end
-                        end
-                    else
-                        %add point p12
-                        add_acc.add    =[add_acc.add k]; %idx of the point we are going to add
-                        add_acc.loop=true; %idx of the point we are going to add
-                        if (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax) 
-                            Manif.grow_info.runinf.add_deltalphamax=Manif.grow_info.runinf.add_deltalphamax+1;
-                        else
-                            Manif.grow_info.runinf.add_alphamax=Manif.grow_info.runinf.add_alphamax+1;
+                    %-- Add a point btw p0 and p1 [for_idx-1]
+                    cond43_idx_p0p1 = false(size(add_acc.add_new));
+                    cond43_idx_p0p1(for_idx(condition43)-1) = true;
+        
+                    %-- Add a point btw p1 and p2 [for_idx]
+                    cond43_idx_p1p2 = false(size(add_acc.add_new));
+                    cond43_idx_p1p2(for_idx(condition43)) = true;
+                        
+                    add_acc.alpha_q0 = angles(add_acc.q0,add_acc.p1,add_acc.p2); % angle at p1: btw q0, p1 and p2
+                    add_acc.alpha_q2 = angles(add_acc.p0,add_acc.p1,add_acc.q2); % angle at p1:  btw p0, p1 and q2
+
+
+                    %-- If adding the point q0 is better than adding q2, then 
+                    %-- Add q0 between p0 and p1 [for_idx-1]
+                    condition430 = add_acc.alpha_q0 < add_acc.alpha_q2;
+                    if any(condition430)
+
+                        cond430_idx = false(size(add_acc.add_new));
+                        cond430_idx(for_idx(condition430)-1) = true;
+
+                        iszero1 = add_acc.add_new == 0;               % we did not add a point already at that index
+                        iszero2 = [add_acc.add_new(2:end) == 0 true]; % we also did not add a point at idx+1
+
+                        % fprintf('\n q0 < q2')
+                        all_cond3 = iszero1 & iszero2 & cond3_idx_p0p1 & cond43_idx_p0p1 & cond430_idx;
+                        all_cond4 = iszero1 & iszero2 & cond4_idx_p0p1 & cond43_idx_p0p1 & cond430_idx;
+                        
+                        add_acc.add_new(all_cond3) = 3; % fail because of alpha 
+                        add_acc.add_new(all_cond4) = 4; % fail because of delta0*alpha and delta2*alpha
+
+                        % if it is NOT the first segment (iter > mapiter) and we are adding a point at index 1, then also add the point at index 2
+                        if (iter > mapiter) && all_cond3(1)==true
+                            add_acc.add_new(2)=3; % fail because of alpha
+                        elseif (iter > mapiter) && all_cond4(1)==true
+                            add_acc.add_new(2)=4; % fail because of delta0*alpha and delta2*alpha
                         end
                     end
+                    
+                    %-- If adding the point q2 is better than adding q0, then 
+                    %-- Add q2 between p1 and p2 [for_idx]
+                    condition431 = add_acc.alpha_q0 > add_acc.alpha_q2;
+                    if any(condition431)
+
+                        cond431_idx = false(size(add_acc.add_new));
+                        cond431_idx(for_idx(condition431)) = true;
+
+                        iszero1 = add_acc.add_new == 0;                 % we did not add a point already at that index
+                        iszero0 = [true add_acc.add_new(1:end-1) == 0]; % we also did not add a point at idx-1
+
+                        % fprintf('\n q0 > q2')
+                        add_acc.add_new(iszero1 & iszero0 & cond3_idx_p1p2 & cond43_idx_p1p2 & cond431_idx) = 3; % fail because of alpha and delta0*alpha and delta2*alpha
+                        add_acc.add_new(iszero1 & iszero0 & cond4_idx_p1p2 & cond43_idx_p1p2 & cond431_idx) = 4; % fail because of delta0*alpha and delta2*alpha
+                    end
+                    
+
                 end
-                
-                
-                
-%-----------%------ If just one Delta*alpha > Delta*alpha max ( and alpha < alphamax (previous elseif is when alpha > alphamax )
+            end
 
-            %------ Delta0*alpha > max, and Delta0 > Deltamin
-            %------ Add a point btw p0 and p1
-            %-- Only if: we are either on the first segment, or k is not 2 (iter < mapiter || k~=2)
-            elseif (iter <= mapiter || k~=2) && (add_acc.delta0*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta0>manif.grow_info.deltamin)
-                % Add a point if we didnt added the point in the previous acc cond checks
-                if numel(add_acc.add)==0 || add_acc.add(end)~=k-1
-                    add_acc.add    =[add_acc.add k-1];  %idx of the point we are going to add
-                    add_acc.loop=true; %idx of the point we are going to add
-                    Manif.grow_info.runinf.add_deltalphamax=Manif.grow_info.runinf.add_deltalphamax+1;
-                end
-                
-            %------ Delta2*alpha > max, and Delta2 > Deltamin
-            %------ Add a point btw p0 and p1
-            elseif add_acc.delta2*add_acc.alpha>=manif.grow_info.deltalphamax && add_acc.delta2>manif.grow_info.deltamin
-                %add point p12
-                add_acc.add    =[add_acc.add k]; %idx of the point we are going to add
-                add_acc.loop=true; %idx of the point we are going to add
-                Manif.grow_info.runinf.add_deltalphamax=Manif.grow_info.runinf.add_deltalphamax+1;
-                
-                
-%-----------%------              
-            end    % (if loop) Adding points     
-%-----------%------      
-%-------%---------- 
-        end       % (for loop) Going through the points that failed 
-%-------%----------
+%-----------%------ If only Delta0*alpha or Delta2*alpha > Delta*alphamax and the angle is ok (previous if is when alpha > alphamax or both delta0alpha and delta2alpha > deltaalphamax)
 
-        newpoints.x=interp.x(add_acc.add);
-        newpoints.y=interp.y(add_acc.add);
-        newpoints.z=interp.z(add_acc.add);
+            %------ Delta0*alpha > max, Delta0 > Deltamin & alpha<alphamax
+            %------ Add a point btw p0 and p1  [for_idx-1]
+            condition51 = (add_acc.delta0.*add_acc.alpha >= manif.grow_info.deltalphamax & add_acc.delta0 > manif.grow_info.deltamin) & add_acc.delta2.*add_acc.alpha < manif.grow_info.deltalphamax & add_acc.alpha < manif.grow_info.alphamax;
+            if any(condition51)
+
+                cond51_idx = false(size(add_acc.add_new));
+                cond51_idx(for_idx(condition51)-1) = true;
+
+                iszero1 = add_acc.add_new == 0;               % we did not add a point already at that index
+                iszero2 = [add_acc.add_new(2:end) == 0 true]; % we also did not add a point at idx+1
+
+                % fprintf('\n Delta0*alpha > max, and Delta0 > Deltamin and alpha OK')
+                add_acc.add_new(iszero1 & iszero2 & cond51_idx) = 5;
+            end
+
+            %------ Delta2*alpha > max, and Delta2 > Deltamin & alpha<alphamax
+            %------ Add a point btw p1 and p2  [for_idx]
+            condition52 = (add_acc.delta2.*add_acc.alpha >= manif.grow_info.deltalphamax & add_acc.delta2 > manif.grow_info.deltamin) & add_acc.delta0.*add_acc.alpha < manif.grow_info.deltalphamax & add_acc.alpha < manif.grow_info.alphamax;
+            if any(condition52)
+
+                cond51_idx = false(size(add_acc.add_new));
+                cond51_idx(for_idx(condition51)) = true;
+
+                iszero1 = add_acc.add_new == 0;                 % we did not add a point already at that index
+                iszero0 = [true add_acc.add_new(1:end-1) == 0]; % we also did not add a point at idx-1
+
+                % fprintf('\n Delta2*alpha > max, and Delta2 > Deltamin and alpha OK')
+                add_acc.add_new(iszero1 & iszero0 & cond51_idx) = 5;
+            end
+
+
+            % if it is NOT the first segment, then never add the first point q0
+            if (iter > mapiter) && add_acc.add_new(1) ~= 0
+                % fprintf('\n not first segment!')
+                add_acc.add_new(1) = 0;
+            end
+
+
+            %If we added at least one point
+            if any(add_acc.add_new ~= 0)
+    
+                % fprintf('\n we added points')
+                add_acc.loop = true; % we will check again the accuracy conditions on adjacent points of those that failed
+                add_acc.add_idx  = find(add_acc.add_new ~= 0); %idx of the point we are going to add
+                
+                % count how many points failed and why
+                Manif.grow_info.runinf.add_deltamax = Manif.grow_info.runinf.add_deltamax + sum(add_acc.add_new == 1 | add_acc.add_new == 2);
+                Manif.grow_info.runinf.add_alphamax = Manif.grow_info.runinf.add_alphamax + sum(add_acc.add_new == 3);
+                Manif.grow_info.runinf.add_deltalphamax = Manif.grow_info.runinf.add_deltalphamax + sum(add_acc.add_new == 4 | add_acc.add_new == 5);
         
+                newpoints.x = interp.x(add_acc.add_idx);
+                newpoints.y = interp.y(add_acc.add_idx);
+                newpoints.z = interp.z(add_acc.add_idx);
         
-        mapnewpoints.x=mapinterp.x(add_acc.add);
-        mapnewpoints.y=mapinterp.y(add_acc.add);
-        mapnewpoints.z=mapinterp.z(add_acc.add);
-
-        % newidx_preimages=idx_eps_preimages(add_acc.add);
+                mapnewpoints.x = mapinterp.x(add_acc.add_idx);
+                mapnewpoints.y = mapinterp.y(add_acc.add_idx);
+                mapnewpoints.z = mapinterp.z(add_acc.add_idx);
         
-       fprintf(' added points: %i) \n',numel(add_acc.add));
-
+                % newidx_preimages=idx_eps_preimages(add_acc.add);
         
-        % Add the points 
-        if ~isempty(add_acc.add)
-            
-            % get updated idx of failed points
-            plus=0:(numel(add_acc.add)-1);
-            add_acc.failed = unique(sort([add_acc.add+plus add_acc.add+plus+1 add_acc.add+plus+2]));
-            add_acc.failed=add_acc.failed(add_acc.failed>1);
-            add_acc.failed=add_acc.failed(add_acc.failed<numel(mappoints.x)+numel(add_acc.add));
+    
+                % get updated idx of failed points
+                plus           = 0 : (numel(add_acc.add_idx) - 1);
+                add_acc.failed = unique(sort([(add_acc.add_idx + plus) (add_acc.add_idx + plus + 1) (add_acc.add_idx + plus + 2)]));
+                add_acc.failed = add_acc.failed(add_acc.failed>1);
+                add_acc.failed = add_acc.failed(add_acc.failed < numel(mappoints.x)+numel(add_acc.add_idx));
+    
+                % add points in the mapped manifold and in the old manifold
+                mappoints.x = insert(mappoints.x,mapnewpoints.x,add_acc.add_idx);
+                mappoints.y = insert(mappoints.y,mapnewpoints.y,add_acc.add_idx);
+                mappoints.z = insert(mappoints.z,mapnewpoints.z,add_acc.add_idx);
+    
+                fund.points.x = insert(fund.points.x,newpoints.x,add_acc.add_idx);
+                fund.points.y = insert(fund.points.y,newpoints.y,add_acc.add_idx);
+                fund.points.z = insert(fund.points.z,newpoints.z,add_acc.add_idx);
 
-            % add points in the mapped manifold and in the old manifold
-            mappoints.x=insert(mappoints.x,mapnewpoints.x,add_acc.add);
-            mappoints.y=insert(mappoints.y,mapnewpoints.y,add_acc.add);
-            mappoints.z=insert(mappoints.z,mapnewpoints.z,add_acc.add); 
-
-            fund.points.x=insert(fund.points.x,newpoints.x,add_acc.add);
-            fund.points.y=insert(fund.points.y,newpoints.y,add_acc.add);
-            fund.points.z=insert(fund.points.z,newpoints.z,add_acc.add); 
-
-            % idx_eps_preimages=insert(idx_eps_preimages,newidx_preimages,add_acc.add);
-
-        end
+                
+            end
         
+            fprintf(' added points: %i) \n', sum(add_acc.add_new ~= 0));
+
+
 %---%--------------       
     end           % (while loop) Checking acc cond 
 %---%--------------
+
 
     % if there this is not the first segment on the branch, then update
     % mappoint so it doesn't contain previous fundamental domain
@@ -793,6 +879,28 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 end
 %--------------- END adding points
 
+
+    % % to plot the points we added
+    % figure
+    % plot3(mappoints.x,mappoints.y,mappoints.z,'-b')
+    % hold on
+    % plot3(mappoints.x,mappoints.y,mappoints.z,'.r')
+    % plot3(first_iter.x(2:end),first_iter.y(2:end),first_iter.z(2:end),'.b')
+    % xlabel('x'); ylabel('y'); zlabel('z');
+    % 
+    % figure
+    % plot(mappoints.x,mappoints.y,'.-r')
+    % hold on
+    % plot(first_iter.x(2:end),first_iter.y(2:end),'.b')
+    % xlabel('x'); ylabel('y'); zlabel('z');
+    % 
+    % figure
+    % plot(mappoints.x,mappoints.z,'.-r')
+    % hold on
+    % plot(first_iter.x(2:end),first_iter.z(2:end),'.b')
+    % xlabel('x'); ylabel('y'); zlabel('z');
+
+
 % Erase last fundamental domain if the computation stopped chopping the last part of the manifold
 if strcmp(manif.orientability,'orientation-preserving') && stop_arc == 1
     Manif.points.(branch1).idx_fund_dom(end, :) = [];
@@ -846,9 +954,10 @@ end % function arclength
 
 function alpha=angles(p0,p1,p2)
 %angle between p0p1 and p1p2
-n1 = (p1 - p2) / norm(p1 - p2);  % Normalized vectors
-n2 = (p0 - p1) / norm(p0 - p1);
-alpha = atan2(norm(cross(n1, n2)), dot(n1, n2)); %gives value from 0 to pi
+n1 = (p1 - p2) ./ vecnorm(p1 - p2, 2);  % Normalized vectors
+n2 = (p0 - p1) ./ vecnorm(p0 - p1, 2);
+alpha = atan2(vecnorm(cross(n1, n2),2), dot(n1, n2)); %gives value from 0 to
+% pi in radians
 end
 
 %----------------
