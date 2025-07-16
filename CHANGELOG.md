@@ -1,3 +1,6 @@
+### What’s new in v2.1.0
+Algorithm optimisations: The iteration process for checking accuracy conditions now uses more vectorised operations for improved performance. The accuracy of the method is the same as before.
+
 ### What’s new in v2.0.0
 1. Manifold initialisation is now handled directly in the GrowFundCurv1D function — it no longer requires an initial segment computed externally.
 2. Updated syntax for accessing manifold points. They are now manif.points.pos and manif.points.neg, replacing the old manif.pointspos and manif.pointsneg.
