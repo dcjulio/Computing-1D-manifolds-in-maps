@@ -1,5 +1,5 @@
 ### What’s new in v2.1.0
-Algorithm optimisations: The iteration process for checking accuracy conditions of the function GrowFundCurv1D now uses more vectorised operations for improved performance. The accuracy of the method is the same as before.
+Algorithm optimisations: The iteration process for checking accuracy conditions of the function GrowFundCurv1D now uses vectorised operations for more processes for improved performance. The accuracy of the method is the same as before.
 
 ### What’s new in v2.0.0
 1. Manifold initialisation is now handled directly in the GrowFundCurv1D function — it no longer requires an initial segment computed externally.
