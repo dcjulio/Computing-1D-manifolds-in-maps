@@ -85,7 +85,7 @@ clim([min(minrad), max(maxrad)]);
 
 title(strrep(manif.name,'_','\_'))
 daspect([1 1 1])
-view([100,30])
+view([-27,31])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function h = color_line3(x, y, z, c, varargin)
 % color_line3 plots a 3-D "line" with c-data as color

@@ -121,12 +121,12 @@ if manif.grow_info.eigvec(1) < 0 % is it is going to negative x, then consider t
     manif.grow_info.eigvec = -manif.grow_info.eigvec;
 end
 
-% Choosing the initial distance correctly:
-% To avoid problems when the contraction/expansion rate is too strong/weak,
-% We define an starting segment from the periodic point up to opts.accpar.init_step
-% Then, we iterate that starting piece until it returns. 
-% When it returns, we define the first fundamental domain.
-% starting point of the initial segment is the periodic point
+% Choosing the initial distance correctly (To avoid problems when the
+% contraction/expansion rate is too strong/weak)
+% 1. We define an initial segment from the periodic point to init_step
+% 2. We iterate the initial segment
+% 3. We refine the new segment
+% 4. We define the first fundamental domain
 
 segment_init.x = manif.fixp.x;
 segment_init.y = manif.fixp.y;
@@ -149,17 +149,18 @@ fund.points.idx_fund_dom = [1 numel(fund.points.x)];
 
 
 manif.points.(branch1)=fund.points;
-% manif.points.(branch1).idx_preimages=zeros(1,numel(fund.points.x));
+manif.points.(branch1).idx_eps_preimage=zeros(1,numel(fund.points.x)); % zero: initial segment <= init_step
+
 if strcmp(manif.orientability,'orientation-preserving') 
 
-    % manif.points.(branch1).branch_preimage = branch1; %name of the branch
+    manif.points.(branch1).branch_preimage = branch1; %name of the branch of preimage
     total_arc = fund.points.arc(end);
     
 
 elseif strcmp(manif.orientability,'orientation-reversing') 
 
 
-    % manif.points.(branch1).branch_preimage = branch2; %name of the branch
+    manif.points.(branch1).branch_preimage = branch2; %name of the branch of preimage
     total_arc_branch1 = fund.points.arc(end);
 
     manif.points.(branch2).x=[]; 
@@ -167,8 +168,8 @@ elseif strcmp(manif.orientability,'orientation-reversing')
     manif.points.(branch2).z=[]; 
     manif.points.(branch2).arc=[]; 
     manif.points.(branch2).idx_fund_dom = []; 
-    % manif.points.(branch2).idx_preimages=[];
-    % manif.points.(branch2).branch_preimage = branch1;
+    manif.points.(branch2).idx_eps_preimage=[];
+    manif.points.(branch2).branch_preimage = branch1;
 
     total_arc_branch2 = 0;
 end
@@ -218,7 +219,13 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         %mapping the points
         mappoints = thesystem.mapping(fund.points,opts,sign);
 
-        % idx_eps_preimages=fund.points.idx_fund_dom(1):fund.points.idx_fund_dom(2);
+        idx_eps_preimage=fund.points.idx_fund_dom(1):fund.points.idx_fund_dom(2);
+
+        % figure
+        % plot(mappoints.x,mappoints.y,'o-r')
+        % hold on
+        % plot(fund.points.x,fund.points.y,'.-b')
+
 
      %% STARTING THE ALGORITHM
  
@@ -243,7 +250,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     fund.points.y(nan_idx)=[]; 
     fund.points.z(nan_idx)=[]; 
     
-    % idx_eps_preimages(nan_idx)=[]; 
+    idx_eps_preimage(nan_idx)=[]; 
 
 
     %Delete points at infinity
@@ -267,7 +274,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     fund.points.y(inf_idx)=[]; 
     fund.points.z(inf_idx)=[]; 
 
-    % idx_eps_preimages(inf_idx)=[];
+    idx_eps_preimage(inf_idx)=[];
 
 
      %% Replace first point of the current mapped segment by the last point of the previous segment (continuous manifold)
@@ -336,8 +343,8 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         return;
     end
 
-    % if in this iteration we exceed the desired arclength, then we chop
-    % the fundamental domain up to the desired arclength
+    % if the mapped points exceeds the desired arclength, then we chop.
+    % This is done so we only refine an adequately long segment
     if arc_mappoints(end) > needed_arc 
         idx_arc = find(arc_mappoints > needed_arc,1); %where we exceed the extra needed arc
         % chop the fund domain and the mappoints up to there
@@ -349,7 +356,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         mappoints.y=mappoints.y(1:idx_arc);
         mappoints.z=mappoints.z(1:idx_arc);
         
-        % idx_eps_preimages=idx_eps_preimages(1:idx_arc);
+        idx_eps_preimage = idx_eps_preimage(1:idx_arc);
 
         if strcmp(manif.orientability,'orientation-preserving')
             stop_arc=1; % this is the last iteration
@@ -376,8 +383,6 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     add_acc.loop=true; % still doing the while loop 
 
 
-
-
     %if is the NOT the first segment of manifold on that branch and is not
     %the first return, then
     %we also take into account the point at the end of the previous fund domain 
@@ -390,8 +395,9 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         fund_initial.x = [fund.points.x(1) fund.points.x];
         fund_initial.y = [fund.points.y(1) fund.points.y]; 
         fund_initial.z = [fund.points.z(1) fund.points.z]; 
+
     else
-        fund_initial=fund.points; %starting mesh of the fundamental domain
+        fund_initial = fund.points; %starting mesh of the fundamental domain
     end
 
 
@@ -675,7 +681,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
                 mapnewpoints.y = mapinterp.y(add_acc.add_idx);
                 mapnewpoints.z = mapinterp.z(add_acc.add_idx);
         
-                % newidx_preimages=idx_eps_preimages(add_acc.add);
+                newidx_preimage = idx_eps_preimage(add_acc.add_idx-1);
         
     
                 % get updated idx of failed points
@@ -693,7 +699,8 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
                 fund.points.y = insert(fund.points.y,newpoints.y,add_acc.add_idx);
                 fund.points.z = insert(fund.points.z,newpoints.z,add_acc.add_idx);
 
-                
+                idx_eps_preimage = insert(idx_eps_preimage,newidx_preimage,add_acc.add_idx-1);
+
             end
         
             fprintf(' added points: %i) \n', sum(add_acc.add_new ~= 0));
@@ -703,13 +710,14 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     end           % (while loop) Checking acc cond 
 %---%--------------
 
-
-    % if there this is not the first segment on the branch, then update
+    % if this is not the first return on the branch, then update
     % mappoint so it doesn't contain previous fundamental domain
     if iter > mapiter
-        mappoints.x=mappoints.x(2:end);
-        mappoints.y=mappoints.y(2:end);
-        mappoints.z=mappoints.z(2:end);
+        mappoints.x(1) = [];
+        mappoints.y(1) = [];
+        mappoints.z(1) = [];
+
+        idx_eps_preimage(1) = [];
     end
 
     % Chop the overlaping segment here
@@ -729,7 +737,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         idx = find(dist_new_segment > dist_init_segment,1,'first'); % find first time the dist of the new segment is greater than the last point of previous segment
         % fprintf('\n\nfirst time index is greater than the last point of the previous segment %i\n\n',idx)
 
-        % distance from last point of previous segment to the line
+        % Distance from last point of initial segment to the new segment. Easy way to check the angle
         P0 = [Manif.points.(branch).x(end), Manif.points.(branch).y(end), Manif.points.(branch).z(end)]; % last point
         P1 = [mappoints.x(idx-1), mappoints.y(idx-1), mappoints.z(idx-1)];
         P2 = [mappoints.x(idx), mappoints.y(idx), mappoints.z(idx)];
@@ -740,7 +748,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
         % check distance
         if first_return_dist > abs(Manif.grow_info.init_step)
-            fprintf('Warning! the distance between last point of initial segment and its first return is greater than the initial step %e It is %e\n\n',Manif.grow_info.init_step, first_return_dist)
+            fprintf('Warning! the angle (distance) between the initial segment and its first return is greater than the initial step %e. It is %e.\n\n',Manif.grow_info.init_step, first_return_dist)
             % prompt = "\n... Press something to continue\n\n";
             % x = input(prompt);
         end
@@ -749,8 +757,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         mappoints.x = [Manif.points.(branch).x(end)  mappoints.x(idx:end)];
         mappoints.y = [Manif.points.(branch).y(end)  mappoints.y(idx:end)];
         mappoints.z = [Manif.points.(branch).z(end)  mappoints.z(idx:end)];
-        % idx_eps_preimages(1:idx-1)=[];
-
+        idx_eps_preimage(1:idx-1) = [];
     end
 
     if iter >= mapiter %if there is already a segment on that branch
@@ -798,7 +805,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         fund.points.y=fund.points.y(keep);
         fund.points.z=fund.points.z(keep);
         fund.points.arc=fund.points.arc(keep);
-        % idx_eps_preimages=idx_eps_preimages(keep);
+        idx_eps_preimage=idx_eps_preimage(keep);
 
          idx_arc = find(fund.points.arc < needed_arc, 1, 'last'); %find last point that is less than the needed arc
 
@@ -807,6 +814,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
          fund.points.y = spline(fund.points.arc,fund.points.y,[fund.points.arc(1:idx_arc) needed_arc]);
          fund.points.z = spline(fund.points.arc,fund.points.z,[fund.points.arc(1:idx_arc) needed_arc]);
          fund.points.arc = arclength(fund.points);
+         idx_eps_preimage = idx_eps_preimage(1:numel(fund.points.x)-1);
     end
 
 
@@ -815,12 +823,13 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
 
 
 
-    % obtain the starting index of the fund domain to store. start=1 if is
-    % the first segment store on that branch, start = 2
-    if numel(Manif.points.(branch).x) == 0 % this is not the first time storing data on that branch
-        start=1;
+    % obtain the starting index of the fund domain to store. Is it is the
+    % first time storing data on that branch then start=1, if is not the
+    % first time, then start=2.
+    if numel(Manif.points.(branch).x) == 0 % this is the first time storing data on that branch
+        start=1; 
     else
-        start=2;
+        start=2; %the first point on the fundamental domain is the last point of the previous segment, hence we dont have to store the first point into the manifold computation
     end
 
     % add indices of fundamental domain
@@ -834,7 +843,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     Manif.points.(branch).z = [Manif.points.(branch).z fund.points.z(start:end)];
     Manif.points.(branch).arc = arclength(Manif.points.(branch));
 
-    % Manif.points.(branch).idx_preimages=[Manif.points.(branch).idx_preimages idx_eps_preimages(1:numel(fund.points.x(start:end)))];
+    Manif.points.(branch).idx_eps_preimage=[Manif.points.(branch).idx_eps_preimage idx_eps_preimage];
     Manif.points.(branch).idx_fund_dom(iter_fund,:)=[max(N,1) numel(Manif.points.(branch).x)];
     fund.points.idx_fund_dom = Manif.points.(branch).idx_fund_dom(iter_fund,:);
 
