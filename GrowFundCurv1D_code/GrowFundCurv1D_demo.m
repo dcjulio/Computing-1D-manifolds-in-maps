@@ -1,7 +1,7 @@
 %% Adding the path
     clear all
     close all
-    addpath('./GrowFundCurv1D_functions_v3.0.0');
+    addpath('./GrowFundCurv1D_functions');
 
 %% Options
 
