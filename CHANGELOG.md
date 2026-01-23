@@ -1,3 +1,6 @@
+### What’s new in v3.0.0
+Now, GrowFundCurv1D stores a pseudo-orbit for each mesh point in the manifold computation.
+
 ### What’s new in v2.1.0
 Algorithm optimisations: The iteration process for checking accuracy conditions of the function GrowFundCurv1D now uses vectorised operations for more processes for improved performance. The accuracy of the method is the same as before.
 
