@@ -32,15 +32,18 @@ classdef StdHenon3D
             outpoints=points;
       
         end
-   
 
+        %%
+        %//////// USER SHOULD CHANGE DEFINITIONS BELOW /////////%
+        %%
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%% DEFINITION OF THE MAP %%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-        % > -------- map
+        %----------------------------------------------
+        %------------------- Map ----------------------
+        %----------------------------------------------
         function map_points=ff(points,opts)
 
             a=opts.par.a;
@@ -57,10 +60,8 @@ classdef StdHenon3D
         end
         
         %----------------------------------------------
+        %--------------- Inverse map ------------------
         %----------------------------------------------
-        %----------------------------------------------
-
-        % > -------- inverse map
         function map_points=ff_inv(points,opts)
 
             a=opts.par.a;
@@ -75,12 +76,6 @@ classdef StdHenon3D
             map_points.z = (-points.x + points.z)/xi;
 
         end
-
-        %----------------------------------------------
-        %----------------------------------------------
-        %----------------------------------------------
-
-
 
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -120,13 +115,14 @@ classdef StdHenon3D
         end
 
          
-        %------------ Compactification ---------------
-        %----------------------------------------------
-        %----------------------------------------------
-        %----------------------------------------------
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%% COMPACTIFICATION %%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
         
-        
-        % > -------- decompactify
+        %----------------------------------------------
+        %--------------- decompactify ------------------
+        %----------------------------------------------
         function decomp_points=decompactify(points)
             decomp_points=struct();
 
@@ -138,10 +134,8 @@ classdef StdHenon3D
         end
         
         %----------------------------------------------
+        %--------------- compactify ------------------
         %----------------------------------------------
-        %----------------------------------------------
-    
-        % > -------- compactify
         function comp_points=compactify(points)
             comp_points=struct();
 
@@ -152,31 +146,6 @@ classdef StdHenon3D
 
         end
         
-
-        %----------------------------------------------
-        %----------------------------------------------
-        %----------------------------------------------
-        % > -------- map and inverse map from compactification to compactification
-        
-        function inv_points=invmap_comp(points,opts)
-
-            thesystem=opts.thesystem;
-
-            decomp=thesystem.decompactify(points);
-            inv=thesystem.ff_inv(decomp,opts);
-            inv_points=thesystem.compactify(inv);
-
-        end
-        
-        function inv_points=map_comp(points,opts)
-
-            thesystem=opts.thesystem;
-
-            decomp=thesystem.decompactify(points);
-            inv=thesystem.ff(decomp,opts);
-            inv_points=thesystem.compactify(inv);
-
-        end
 
     end
 end
