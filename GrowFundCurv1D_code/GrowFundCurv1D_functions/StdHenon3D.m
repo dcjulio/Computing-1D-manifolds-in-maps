@@ -1,41 +1,6 @@
 classdef StdHenon3D
     methods     ( Static = true )
 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%% MAPPING %%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function outpoints = mapping(inpoints,opts,mapiter)
-            %manif.points: coordinates x,y,z
-            %mapiter: integer. neg for preimage(Smanifold), pos for image(Umanifold)
-            thesystem=opts.thesystem;
-            points=inpoints;
-
-
-            for i=1:abs(mapiter) % time the map is applied
-
-                %decompactify
-                decomp_points=thesystem.decompactify(points);
-
-                if mapiter>0 %image (associated with Wu)
-                    map_points=thesystem.ff(decomp_points,opts);
-
-                else %preimage (associated with Ws)
-                    map_points=thesystem.ff_inv(decomp_points,opts);
-                    
-                end
-                
-
-                %compactify
-                points=thesystem.compactify(map_points); 
-
-            end
-            outpoints=points;
-      
-        end
-
-        %%
-        %//////// USER SHOULD CHANGE DEFINITIONS BELOW /////////%
-        %%
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%% DEFINITION OF THE MAP %%%%%%%%
@@ -119,6 +84,18 @@ classdef StdHenon3D
         %%%%%%%%%%% COMPACTIFICATION %%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+        %----------------------------------------------
+        %--------------- compactify ------------------
+        %----------------------------------------------
+        function comp_points=compactify(points)
+            comp_points=struct();
+
+            r = 1 + sqrt(1 + points.x.^2 + points.y.^2);
+            comp_points.x = points.x./r;
+            comp_points.y = points.y./r;
+            comp_points.z = points.z./(1 + sqrt(1 + points.z.^2));
+
+        end
         
         %----------------------------------------------
         %--------------- decompactify ------------------
@@ -133,19 +110,40 @@ classdef StdHenon3D
 
         end
         
-        %----------------------------------------------
-        %--------------- compactify ------------------
-        %----------------------------------------------
-        function comp_points=compactify(points)
-            comp_points=struct();
 
-            r = 1 + sqrt(1 + points.x.^2 + points.y.^2);
-            comp_points.x = points.x./r;
-            comp_points.y = points.y./r;
-            comp_points.z = points.z./(1 + sqrt(1 + points.z.^2));
-
-        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%% MAPPING %%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ///// Not to be modified by user ///// %
         
+        function outpoints = mapping(inpoints,opts,mapiter)
+            %manif.points: coordinates x,y,z
+            %mapiter: integer. neg for preimage(Smanifold), pos for image(Umanifold)
+            thesystem=opts.thesystem;
+            points=inpoints;
+
+
+            for i=1:abs(mapiter) % time the map is applied
+
+                %decompactify
+                decomp_points=thesystem.decompactify(points);
+
+                if mapiter>0 %image (associated with Wu)
+                    map_points=thesystem.ff(decomp_points,opts);
+
+                else %preimage (associated with Ws)
+                    map_points=thesystem.ff_inv(decomp_points,opts);
+                    
+                end
+                
+
+                %compactify
+                points=thesystem.compactify(map_points); 
+
+            end
+            outpoints=points;
+      
+        end       
 
     end
 end
