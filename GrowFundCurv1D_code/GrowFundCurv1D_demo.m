@@ -27,7 +27,7 @@
     opts.name_fixpoint='pplu'; % name of the fixed point associated to the manifold (has to match with the names defined in StdHenon3D)
     opts.stability='Umanifold';
 
-    opts.branch='pos'; %which branch (Optional. Could be done with the sign of the init_step instead)
+    opts.branch='pos'; %which branch (Optional. Could be done with the sign of the init_step instead. opt.branch has priority)
     manif=GrowFundCurv1D(opts);
 
     %% Computing the other branch (if orientation preserving)

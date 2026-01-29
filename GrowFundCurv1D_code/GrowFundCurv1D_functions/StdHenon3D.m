@@ -115,20 +115,20 @@ classdef StdHenon3D
         %%%%%%%%%%%%% MAPPING %%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % ///// Not to be modified by user ///// %
-        
-        function outpoints = mapping(inpoints,opts,mapiter)
+
+        function outpoints = mapping(inpoints,opts,stab)
             %manif.points: coordinates x,y,z
-            %mapiter: integer. neg for preimage(Smanifold), pos for image(Umanifold)
+            %stab: integer. neg for preimage(Smanifold), pos for image(Umanifold)
             thesystem=opts.thesystem;
             points=inpoints;
 
 
-            for i=1:abs(mapiter) % time the map is applied
+            for i=1:abs(stab) % typically is 1 or -1. It could be set to another integer to increase the times the map is applied. That could be done by cahanging the main routine GrowFundCurv1D
 
                 %decompactify
                 decomp_points=thesystem.decompactify(points);
 
-                if mapiter>0 %image (associated with Wu)
+                if stab>0 %image (associated with Wu)
                     map_points=thesystem.ff(decomp_points,opts);
 
                 else %preimage (associated with Ws)
