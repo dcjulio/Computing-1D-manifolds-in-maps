@@ -93,14 +93,14 @@ for k=1:numel(fixp_names)
     fixpinfo.(fixp_names{k}).Smanifold.dimension=sum(abs(eigval)<1);
     fixpinfo.(fixp_names{k}).Smanifold.orientability=orientability(eigval,'Smanifold');
     fixpinfo.(fixp_names{k}).Smanifold.eigval=eigval(abs(eigval)<1);
-    fixpinfo.(fixp_names{k}).Smanifold.eigvec=eigvec(abs(eigval)<1,:);
+    fixpinfo.(fixp_names{k}).Smanifold.eigvec=eigvec(:,abs(eigval)<1);
 
 
     % computes the dimension and orientation properties of the unstable manifold
     fixpinfo.(fixp_names{k}).Umanifold.dimension=sum(abs(eigval)>1);
     fixpinfo.(fixp_names{k}).Umanifold.orientability=orientability(eigval,'Umanifold');
     fixpinfo.(fixp_names{k}).Umanifold.eigval=eigval(abs(eigval)>1);
-    fixpinfo.(fixp_names{k}).Umanifold.eigvec=eigvec(abs(eigval)>1,:);
+    fixpinfo.(fixp_names{k}).Umanifold.eigvec=eigvec(:,abs(eigval)>1);
     
 end
 %saving the info
@@ -124,7 +124,7 @@ if isfield(opts,'branch')
    end
 end
 
-%% Name of the manifold. Example: Ws_pmin_pos
+%% Name of the manifold. Example: Ws_pmin
 
 % defining the name of the manifold
 manif.name = sprintf('W%s_%s', lower(manif.stability(1)),name_fixpoint);  
@@ -186,8 +186,6 @@ function [eigval, eigvec]=eigensystem(fixpoint,opts)
     eigvec=JTp*eigvecF;
     eigvec=normc(eigvec); %normalize each column
 
-    eigvec=eigvec'; %each row is a vector
-    eigval=eigval';
 end
 
 %----------------------------------------------

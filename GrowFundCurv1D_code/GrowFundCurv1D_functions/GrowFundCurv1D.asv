@@ -56,7 +56,7 @@ end
         fprintf('The eigenvectors are:\n')
 
         for i=1:manif.grow_info.dimension
-            fprintf('(%i) Eigenvalue: %.3f, Eigenvector: (%.3f, %.3f, %.3f)\n',i, manif.grow_info.eigval(i), manif.grow_info.eigvec(1,i),manif.grow_info.eigvec(2,i),manif.grow_info.eigvec(3,i))
+            fprintf('(%i) Eigenvalue: %.3f, Eigenvector: (%.3f, %.3f, %.3f)\n',i, manif.grow_info.eigval(i), manif.grow_info.eigvec(1,i),manif.grow_info.eigvec(i,2),manif.grow_info.eigvec(i,3))
         end
 
         if ~isempty(eigenval_idx)
@@ -72,7 +72,7 @@ end
             return
         else
             manif.grow_info.eigval=manif.grow_info.eigval(x);
-            manif.grow_info.eigvec=manif.grow_info.eigvec(:,x);
+            manif.grow_info.eigvec=manif.grow_info.eigvec(x,:);
         end
 
     end
