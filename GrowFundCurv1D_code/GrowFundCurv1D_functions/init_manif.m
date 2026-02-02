@@ -73,6 +73,7 @@ end
 
 
 %% General info of the map
+manif.system_info.thesystem=thesystem; 
 manif.system_info.par=opts.par;  % parameters
 manif.system_info.fixp=thesystem.fixpoints(opts); % fixed points. 'thesystem' store info about the map
 
