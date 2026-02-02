@@ -741,14 +741,14 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         P0 = [Manif.points.(branch).x(end), Manif.points.(branch).y(end), Manif.points.(branch).z(end)]; % last point
         P1 = [mappoints.x(idx-1), mappoints.y(idx-1), mappoints.z(idx-1)];
         P2 = [mappoints.x(idx), mappoints.y(idx), mappoints.z(idx)];
-        first_return_dist = distance_to_line(P0, P1, P2);
+        return_dist = distance_to_line(P0, P1, P2);
 
-        % fprintf('\n\n distance to line %e \n\n',first_return_dist);
-        Manif.grow_info.runinf.first_return_dist = first_return_dist;
+        % fprintf('\n\n distance to line %e \n\n',return_dist);
+        
 
         % check distance
-        if first_return_dist > abs(Manif.grow_info.init_step)
-            fprintf('Warning! the angle (distance) between the initial segment and its first return is greater than the initial step %e. It is %e.\n\n',Manif.grow_info.init_step, first_return_dist)
+        if return_dist > abs(Manif.grow_info.init_step)
+            fprintf('Warning! the angle (distance) between the initial segment and its first return is greater than the initial step %e. It is %e.\n\n',Manif.grow_info.init_step, return_dist)
             % prompt = "\n... Press something to continue\n\n";
             % x = input(prompt);
         end
@@ -910,14 +910,22 @@ end
     % xlabel('x'); ylabel('y'); zlabel('z');
 
 
+    
+
 % Erase last fundamental domain if the computation stopped chopping the last part of the manifold
+%and add the arclength
 if strcmp(manif.orientability,'orientation-preserving') && stop_arc == 1
     Manif.points.(branch1).idx_fund_dom(end, :) = [];
+    arc=Manif.points.(branch1).arc(end);
 elseif strcmp(manif.orientability,'orientation-reversing') && stop_arc_branch1 + stop_arc_branch2 == 2
     Manif.points.(branch1).idx_fund_dom(end, :) = [];
     Manif.points.(branch2).idx_fund_dom(end, :) = [];
+    arc=Manif.points.(branch1).arc(end)+Manif.points.(branch2).arc(end);
 end
 
+Manif.grow_info.runinf.num_funditer=iter;
+Manif.grow_info.runinf.total_arclength=arc;
+Manif.grow_info.runinf.return_dist = return_dist;
 Manif.grow_info.runinf.time=toc;
 
 fprintf('\n elapsed time is %.3f seconds\n\n', Manif.grow_info.runinf.time)
@@ -933,9 +941,8 @@ fprintf('   * %i points added from alpha \n',Manif.grow_info.runinf.add_alphamax
 fprintf('   * %i points added from delta*alpha \n\n',Manif.grow_info.runinf.add_deltalphamax) 
 
 
-Manif.grow_info.runinf.first_return_dist = first_return_dist;
-if first_return_dist > abs(Manif.grow_info.init_step)
-    fprintf('\n\n WARNING! the distance between last point of initial segment and its first return is greater than the initial step %e It is %e\n\n',Manif.grow_info.init_step, first_return_dist)
+if return_dist > abs(Manif.grow_info.init_step)
+    fprintf('\n\n WARNING! the distance between last point of initial segment and its first return is greater than the initial step %e It is %e\n\n',Manif.grow_info.init_step, return_dist)
 end
 
 %% FUNCTIONS
