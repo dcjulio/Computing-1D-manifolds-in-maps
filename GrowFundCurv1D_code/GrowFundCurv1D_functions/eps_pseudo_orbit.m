@@ -17,8 +17,8 @@ function orbit=eps_pseudo_orbit(manif, idxpoint, branch)
         orbit.idxpoint(i) = idxpoint;
 
         % information for the next preimage
-        idxpoint = manif.points.(branch).idx_pseudo_orbit(idxpoint); %index of the manifold preimage
-        branch   = manif.points.(branch).branch_preimage;         %branch of the preimage
+        idxpoint = manif.points.(branch).pre_idx(idxpoint); %index of the manifold preimage
+        branch   = manif.points.(branch).pre_branch;         %branch of the preimage
         
     end
 

@@ -145,31 +145,31 @@ fund.points.y = linspace(segment_init.y, segment_end.y, 6);
 fund.points.z = linspace(segment_init.z, segment_end.z, 6);
 
 fund.points.arc = arclength(fund.points);
-fund.points.idx_fund_dom = [1 numel(fund.points.x)];
+fund.points.fund_idx = [1 numel(fund.points.x)];
 
 
 manif.points.(branch1)=fund.points;
-manif.points.(branch1).idx_pseudo_orbit=zeros(1,numel(fund.points.x)); % zero: initial segment <= init_step
+manif.points.(branch1).pre_idx=zeros(1,numel(fund.points.x)); % zero: initial segment <= init_step
 
 if strcmp(manif.orientability,'orientation-preserving') 
 
-    manif.points.(branch1).branch_preimage = branch1; %name of the branch of preimage
+    manif.points.(branch1).pre_branch = branch1; %name of the branch of preimage
     total_arc = fund.points.arc(end);
     
 
 elseif strcmp(manif.orientability,'orientation-reversing') 
 
 
-    manif.points.(branch1).branch_preimage = branch2; %name of the branch of preimage
+    manif.points.(branch1).pre_branch = branch2; %name of the branch of preimage
     total_arc_branch1 = fund.points.arc(end);
 
     manif.points.(branch2).x=[]; 
     manif.points.(branch2).y=[]; 
     manif.points.(branch2).z=[]; 
     manif.points.(branch2).arc=[]; 
-    manif.points.(branch2).idx_fund_dom = []; 
-    manif.points.(branch2).idx_pseudo_orbit=[];
-    manif.points.(branch2).branch_preimage = branch1;
+    manif.points.(branch2).fund_idx = []; 
+    manif.points.(branch2).pre_idx=[];
+    manif.points.(branch2).pre_branch = branch1;
 
     total_arc_branch2 = 0;
 end
@@ -219,7 +219,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         %mapping the points
         mappoints = thesystem.mapping(fund.points,opts,sign);
 
-        idx_pseudo_orbit=fund.points.idx_fund_dom(1):fund.points.idx_fund_dom(2);
+        pre_idx=fund.points.fund_idx(1):fund.points.fund_idx(2);
 
         % figure
         % plot(mappoints.x,mappoints.y,'o-r')
@@ -250,7 +250,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     fund.points.y(nan_idx)=[]; 
     fund.points.z(nan_idx)=[]; 
     
-    idx_pseudo_orbit(nan_idx)=[]; 
+    pre_idx(nan_idx)=[]; 
 
 
     %Delete points at infinity
@@ -274,7 +274,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     fund.points.y(inf_idx)=[]; 
     fund.points.z(inf_idx)=[]; 
 
-    idx_pseudo_orbit(inf_idx)=[];
+    pre_idx(inf_idx)=[];
 
 
      %% Replace first point of the current mapped segment by the last point of the previous segment (continuous manifold)
@@ -356,7 +356,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         mappoints.y=mappoints.y(1:idx_arc);
         mappoints.z=mappoints.z(1:idx_arc);
         
-        idx_pseudo_orbit = idx_pseudo_orbit(1:idx_arc);
+        pre_idx = pre_idx(1:idx_arc);
 
         if strcmp(manif.orientability,'orientation-preserving')
             stop_arc=1; % this is the last iteration
@@ -681,7 +681,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
                 mapnewpoints.y = mapinterp.y(add_acc.add_idx);
                 mapnewpoints.z = mapinterp.z(add_acc.add_idx);
         
-                newidx_preimage = idx_pseudo_orbit(add_acc.add_idx-1);
+                newidx_preimage = pre_idx(add_acc.add_idx-1);
         
     
                 % get updated idx of failed points
@@ -699,7 +699,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
                 fund.points.y = insert(fund.points.y,newpoints.y,add_acc.add_idx);
                 fund.points.z = insert(fund.points.z,newpoints.z,add_acc.add_idx);
 
-                idx_pseudo_orbit = insert(idx_pseudo_orbit,newidx_preimage,add_acc.add_idx-1);
+                pre_idx = insert(pre_idx,newidx_preimage,add_acc.add_idx-1);
 
             end
         
@@ -717,7 +717,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         mappoints.y(1) = [];
         mappoints.z(1) = [];
 
-        idx_pseudo_orbit(1) = [];
+        pre_idx(1) = [];
     end
 
     % Chop the overlaping segment here
@@ -757,7 +757,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         mappoints.x = [Manif.points.(branch).x(end)  mappoints.x(idx:end)];
         mappoints.y = [Manif.points.(branch).y(end)  mappoints.y(idx:end)];
         mappoints.z = [Manif.points.(branch).z(end)  mappoints.z(idx:end)];
-        idx_pseudo_orbit(1:idx-1) = [];
+        pre_idx(1:idx-1) = [];
     end
 
     if iter >= mapiter %if there is already a segment on that branch
@@ -805,7 +805,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
         fund.points.y=fund.points.y(keep);
         fund.points.z=fund.points.z(keep);
         fund.points.arc=fund.points.arc(keep);
-        idx_pseudo_orbit=idx_pseudo_orbit(keep);
+        pre_idx=pre_idx(keep);
 
          idx_arc = find(fund.points.arc < needed_arc, 1, 'last'); %find last point that is less than the needed arc
 
@@ -814,7 +814,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
          fund.points.y = spline(fund.points.arc,fund.points.y,[fund.points.arc(1:idx_arc) needed_arc]);
          fund.points.z = spline(fund.points.arc,fund.points.z,[fund.points.arc(1:idx_arc) needed_arc]);
          fund.points.arc = arclength(fund.points);
-         idx_pseudo_orbit = idx_pseudo_orbit(1:numel(fund.points.x)-1);
+         pre_idx = pre_idx(1:numel(fund.points.x)-1);
     end
 
 
@@ -833,7 +833,7 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     end
 
     % add indices of fundamental domain
-    iter_fund = numel(Manif.points.(branch).idx_fund_dom)/2 + 1;
+    iter_fund = numel(Manif.points.(branch).fund_idx)/2 + 1;
 
 
     % Add new segment to the entire manifold
@@ -843,9 +843,9 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     Manif.points.(branch).z = [Manif.points.(branch).z fund.points.z(start:end)];
     Manif.points.(branch).arc = arclength(Manif.points.(branch));
 
-    Manif.points.(branch).idx_pseudo_orbit=[Manif.points.(branch).idx_pseudo_orbit idx_pseudo_orbit];
-    Manif.points.(branch).idx_fund_dom(iter_fund,:)=[max(N,1) numel(Manif.points.(branch).x)];
-    fund.points.idx_fund_dom = Manif.points.(branch).idx_fund_dom(iter_fund,:);
+    Manif.points.(branch).pre_idx=[Manif.points.(branch).pre_idx pre_idx];
+    Manif.points.(branch).fund_idx(iter_fund,:)=[max(N,1) numel(Manif.points.(branch).x)];
+    fund.points.fund_idx = Manif.points.(branch).fund_idx(iter_fund,:);
 
 
 
@@ -915,10 +915,10 @@ end
 % Erase last fundamental domain if the computation stopped chopping the last part of the manifold
 %and add the arclength
 if strcmp(manif.orientability,'orientation-preserving') && stop_arc == 1
-    Manif.points.(branch1).idx_fund_dom(end, :) = [];
+    Manif.points.(branch1).fund_idx(end, :) = [];
 elseif strcmp(manif.orientability,'orientation-reversing') && stop_arc_branch1 + stop_arc_branch2 == 2
-    Manif.points.(branch1).idx_fund_dom(end, :) = [];
-    Manif.points.(branch2).idx_fund_dom(end, :) = [];
+    Manif.points.(branch1).fund_idx(end, :) = [];
+    Manif.points.(branch2).fund_idx(end, :) = [];
 end
 
 % find the total arclength
