@@ -916,10 +916,15 @@ end
 %and add the arclength
 if strcmp(manif.orientability,'orientation-preserving') && stop_arc == 1
     Manif.points.(branch1).idx_fund_dom(end, :) = [];
-    arc=Manif.points.(branch1).arc(end);
 elseif strcmp(manif.orientability,'orientation-reversing') && stop_arc_branch1 + stop_arc_branch2 == 2
     Manif.points.(branch1).idx_fund_dom(end, :) = [];
     Manif.points.(branch2).idx_fund_dom(end, :) = [];
+end
+
+% find the total arclength
+if strcmp(manif.orientability,'orientation-preserving')
+    arc=Manif.points.(branch1).arc(end);
+else
     arc=Manif.points.(branch1).arc(end)+Manif.points.(branch2).arc(end);
 end
 

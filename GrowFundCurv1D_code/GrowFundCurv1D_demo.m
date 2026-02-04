@@ -31,7 +31,7 @@
     manif=GrowFundCurv1D(opts);
 
     %% Computing the other branch (if orientation preserving)
-    % manif=add_branch(manif, opts, 'neg');
+    %manif=add_branch(manif, opts, 'neg');
 
 %% Computing intersection points
     angle=pi/4; %the angle of the plane from [-pi, pi]. (angle=pi/2: x==0 (y>0), angle=0: y==0 (x>0))
