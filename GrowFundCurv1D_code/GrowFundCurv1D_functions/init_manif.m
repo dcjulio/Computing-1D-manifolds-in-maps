@@ -135,6 +135,8 @@ manif.fixp=manif.system_info.fixp.(name_fixpoint);
 manif.fixp.name=name_fixpoint;
 
 %% algorithm information
+%manif.grow_info.fixp=manif.fixp; this didnt work if manifold is 2D and
+%then we need to choose a specific eigenvector
 manif.grow_info.stability=manif.stability; % stability of the manifold
 manif.grow_info.orientability=manif.orientability; % orientability of the manifold
 manif.grow_info.dimension=manif.dimension; % dimension of the manifold
@@ -145,7 +147,7 @@ manif.grow_info.eigvec=manif.fixp.(manif.stability).eigvec;
 
 manif.grow_info.max_funditer=opts.max_funditer; % number of iteration of the algorithm
 manif.grow_info.max_funditer=opts.max_funditer; % number of iteration of the algorithm
-manif.grow_info.user_arclength=opts.user_arclength;
+manif.grow_info.target_arc=opts.target_arc;
 
     
 

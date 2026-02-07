@@ -39,12 +39,12 @@ if isfield(manif.points,'neg')
 end
 
 %-- Unit circle
-[xunit,yunit] = circle(0,0,1,1000);
-plot3(xunit,yunit,ones(size(xunit)),'k','LineWidth',1.5)
-plot3(xunit,yunit,-ones(size(xunit)),'k','LineWidth',1.5)
+%[xunit,yunit] = circle(0,0,1,1000);
+%plot3(xunit,yunit,ones(size(xunit)),'k','LineWidth',1.5)
+%plot3(xunit,yunit,-ones(size(xunit)),'k','LineWidth',1.5)
 % 
 
-%-- fixed points
+%-- fixed points %make this automatic
 plot3(manif.system_info.fixp.pplu.x, manif.system_info.fixp.pplu.y, manif.system_info.fixp.pplu.z,'marker','o','MarkerFaceColor',[230, 178, 17]/255,'MarkerEdgeColor',[87, 67, 6]/255,'LineWidth',1.4,'MarkerSize',6.5)
 plot3(manif.system_info.fixp.pmin.x,manif.system_info.fixp.pmin.y,manif.system_info.fixp.pmin.z,'marker','o','MarkerFaceColor',[230, 178, 17]/255,'MarkerEdgeColor',[87, 67, 6]/255,'LineWidth',1.4,'MarkerSize',6.5)
 
@@ -78,9 +78,6 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([-1.01 1.01])
-ylim([-1.01 1.01])
-zlim([-1.01 1.01])
 clim([min(minrad), max(maxrad)]);
 
 title(strrep(manif.name,'_','\_'))

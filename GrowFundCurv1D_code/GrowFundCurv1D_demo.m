@@ -8,7 +8,7 @@
     %--- Information of the system
     opts.thesystem=StdHenon3D; % What is the name of the system file
     opts.par=struct('a', 4.2,'b', -0.3, 'xi', 0.8); % The parameter values and names (has to match with the names defined in StdHenon3D)
-    opts.user_arclength = 2000; % What is the approximate arclength of the manifold
+    opts.target_arc = 2000; % What is the approximate arclength of the manifold
     
     %--- Number of iterations used to compute the manifold
     opts.max_funditer = 100; % how many times (max) the algorithm iterates the fundamental domain
@@ -33,26 +33,26 @@
     %% Computing the other branch (if orientation preserving)
     %manif=add_branch(manif, opts, 'neg');
 
+%% POST PROCESSING
 %% Computing intersection points
     angle=pi/4; %the angle of the plane from [-pi, pi]. (angle=pi/2: x==0 (y>0), angle=0: y==0 (x>0))
     manif=inter_plane(manif,angle);
 
 %% Plot
-    manifplot(manif);
+   h = manifplot(manif);
 
-%% Epsilon pseudo orbit (orientation-preserving)
+   xlim([-1.01 1.01])
+   ylim([-1.01 1.01])
+   zlim([-1.01 1.01])
+%% Epsilon pseudo orbit
 
-branch    = opts.branch; %what branch is intersecting the plane
+branch    = 'pos'; %what branch is intersecting the plane
+idx  = manif.inter.points.(branch).idx(end); % for example, the closest mesh point to the last intersection point. It can be any index of mesh point from
 
-if isfield(manif,'inter') && numel(manif.inter.points.(branch).idx)>0
-    
-    idxpoint  = manif.inter.points.(branch).idx(end); % for example, the last intersection point
-    orbit     = eps_pseudo_orbit(manif, idxpoint, branch); % computing the pseudo orbit of the intersection point
+orbit     = pseudo_orbit(manif, idx, branch); % computing the pseudo orbit of the intersection point
 
 % Plotting the eps-pseudo-orbit
-     hold on
-     plot3(orbit.x([1,end]),orbit.y([1,end]),orbit.z([1,end]),'r.','MarkerSize',27) %epsilon orbit
-     plot3(orbit.x,orbit.y,orbit.z,'ko--','LineWidth',1.2) %epsilon orbit
-end
-
+ hold on
+ plot3(orbit.x([1,end]),orbit.y([1,end]),orbit.z([1,end]),'r.','MarkerSize',27) %epsilon orbit
+ plot3(orbit.x,orbit.y,orbit.z,'ko--','LineWidth',1.2) %epsilon orbit
 

@@ -19,7 +19,7 @@ end
     %saves the information of the system stored in the structure 'manif' and 'opts'
     par=manif.system_info.par;
     thesystem=opts.thesystem;
-
+    dimension=manif.grow_info.fixp.(opts.stability).dimension;
     %% Warnings in case the specifications are not correct for the computation of this manifold
 
     if strcmp(manif.orientability,'orientation-reversing')
@@ -49,12 +49,12 @@ end
 
     %% Warnings if the manifold we want to compute is not 1D
     
-    if manif.grow_info.dimension>1
+    if dimension>1
         fprintf('\n----  The dimension of the manifold is %i and this algorithm is designed to compute one-dimensional manifolds. -----\n',manif.grow_info.dimension)
         fprintf(' To choose automatically which of the two eigenvalues to use, include a second argument to GrowFundCurv1D(opts,#) where #: 1 or 2\n\n') 
         fprintf('The eigenvectors are:\n')
 
-        for i=1:manif.grow_info.dimension
+        for i=1:dimension
             fprintf('(%i) Eigenvalue: %.3f, Eigenvector: (%.3f, %.3f, %.3f)\n',i, manif.grow_info.eigval(i), manif.grow_info.eigvec(1,i),manif.grow_info.eigvec(2,i),manif.grow_info.eigvec(3,i))
         end
 
@@ -116,9 +116,11 @@ end
 %% computes first fundamental domain
 
 % by default, we choose the eigenvector going to positive x
-if manif.grow_info.eigvec(1) < 0 % is it is going to negative x, then consider the other side
-    manif.grow_info.eigvec = -manif.grow_info.eigvec;
+if manif.grow_info.fixp.(opts.stability).eigvec(1) < 0 % is it is going to negative x, then consider the other side
+    manif.grow_info.fixp.eigvec = -manif.grow_info.fixp.eigvec;
 end
+
+eigvec=manif.grow_info.fixp.eigvec;
 
 % Choosing the initial distance correctly (To avoid problems when the
 % contraction/expansion rate is too strong/weak)
