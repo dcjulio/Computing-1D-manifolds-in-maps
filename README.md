@@ -3,7 +3,7 @@
 
 NOTE:<br> This is version v3.0.0.<br>
 See the file CHANGELOG for changes between sub-versions.<br>
-Note that some changes have not been reflected in the manual v1.0.0 yet.<br>
+Note that some changes have not been reflected in the manual yet.<br>
 To browse other previous versions, click on "Releases" on the right side of the page. There, all the published releases are shown in reverse chronological order.
 
 ---
