@@ -58,32 +58,31 @@
 
 %% POST-PROCESSING
     %--- Computing intersection points
-    % Define the half-plane angle theta in [-pi, pi] (e.g., pi/2: x=0, y>0)
+    % Define the half-plane angle theta in [-pi, pi] (e.g., pi/2: x=0, y>0; 0: y=0, x>0)
     angle = pi/4; 
     
     % Compute ordered intersection points and append to the manif structure
-    manif = inter_plane(manif, angle);
+    manif     = inter_plane(manif, angle_val);
+%% POST PROCESSING
+%% Computing intersection points
+    angle=pi/4; %the angle of the plane from [-pi, pi]. (angle=pi/2: x==0 (y>0), angle=0: y==0 (x>0))
+    manif=inter_plane(manif,angle);
 
-%% VISUALISATION
-    % Main manifold plot
-    h = manifplot(manif);
-    
-    % Set axes limits
-    xlim([-1.01 1.01]); ylim([-1.01 1.01]); zlim([-1.01 1.01]);
+%% Plot
+   h = manifplot(manif);
 
-%% PSEUDO-ORBIT RECONSTRUCTION
-    % Select the branch where the pseudo-orbit ends
-    branch_name = 'pos'; 
-    
-    % Identify the mesh point index (e.g., the point immediately preceding the final intersection)
-    idx_start   = manif.inter.points.(branch_name).idx(end); 
-    
-    % Construct the pseudo-orbit by tracing preimages
-    orbit       = pseudo_orbit(manif, idx_start, branch_name);
+   xlim([-1.01 1.01])
+   ylim([-1.01 1.01])
+   zlim([-1.01 1.01])
+%% Epsilon pseudo orbit
 
-%% VISUALISATION OF PSEUDO-ORBIT
-    hold on
-    % Plot the full trajectory as a black dashed line with circular markers
-    plot3(orbit.x, orbit.y, orbit.z, 'ko--', 'LineWidth', 1.2) 
-    hold off
+branch    = 'pos'; %what branch is intersecting the plane
+idx  = manif.inter.points.(branch).idx(end); % for example, the closest mesh point to the last intersection point. It can be any index of mesh point from
+
+orbit     = pseudo_orbit(manif, idx, branch); % computing the pseudo orbit of the intersection point
+
+% Plotting the eps-pseudo-orbit
+ hold on
+ plot3(orbit.x([1,end]),orbit.y([1,end]),orbit.z([1,end]),'r.','MarkerSize',27) %epsilon orbit
+ plot3(orbit.x,orbit.y,orbit.z,'ko--','LineWidth',1.2) %epsilon orbit
 
