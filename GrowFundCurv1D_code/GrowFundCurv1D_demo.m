@@ -83,7 +83,8 @@
 
 %% VISUALISATION OF PSEUDO-ORBIT
     hold on
-    % Plot the full trajectory as a black dashed line with circular markers
+    % Plot the full trajectory as a black circular markers connected by
+    % dashed lines
     plot3(orbit.x, orbit.y, orbit.z, 'ko--', 'LineWidth', 1.2) 
     hold off
 
