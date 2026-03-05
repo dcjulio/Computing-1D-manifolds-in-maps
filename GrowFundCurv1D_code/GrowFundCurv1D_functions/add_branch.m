@@ -3,7 +3,7 @@ function manif=add_branch(manif, opts, newbranch)
     %--- Information of the system
     opts.thesystem       = manif.grow_info.thesystem; % What is the name of the system file
     opts.par             = manif.system_info.par; % The parameter values and names (has to match with the names defined in StdHenon3D)
-    opts.target_arclength  = manif.grow_info.target_arclength; % What is the approximate arclength of the manifold
+    opts.target_arc      = manif.grow_info.target_arc; % What is the approximate arclength of the manifold
     opts.stability       = manif.stability;
 
     %--- Accuracy parameters (default)
