@@ -6,13 +6,13 @@ function Manif=GrowFundCurv1D(opts,eigenval_idx)
 %       - opts : Structure containing system parameters, target arclength,
 %                max iterations, and accuracy parameters.
 %       - eigenval_idx : (Optional) Integer [1 or 2] selecting which 
-%                        eigenvector to choose to compute an orbit in a higher-dimensional (2D) manifold.
+%                        eigenvector to choose to compute an orbit in a higher-dimensional subspace.
 %
 %   OUTPUTS:
 %       - Manif : Structure storing the computed manifold mesh
 %                 points, arclengths, preimage mapping indices, and runtime
 %                 diagnostics.
-%% INPUT VALIDATION & MANIFOLD INITIALIZATION
+%%
 if nargin < 2
     eigenval_idx = [];
 else
@@ -22,81 +22,73 @@ else
     end
 end
     
-% Allocate and pre-fill the manifold structure using user-defined choices
-manif = init_manif(opts);
+    %% Initializing the manifold structure
+    manif = init_manif(opts);
 
-tic % Start execution timer for performance metrics
+    tic
+    %%
+    %saves the information of the system stored in the structure 'manif' and 'opts'
+    par=manif.system_info.par;
+    thesystem=opts.thesystem;
 
-% Extract core parameter values and the user-defined system class
-par=manif.system_info.par;
-thesystem=opts.thesystem;
+    %% Warnings in case the specifications are not correct for the computation of this manifold
 
-%% ORIENTABILITY & STABILITY CONFIGURATION
+    if strcmp(manif.orientability,'orientation-reversing')
+        fprintf('\n----  Manifold is non-orientable. We will proceed computing both branches\n');
+        mapiter=2;
+    else
+        mapiter=1;
+    end
 
-% Comment on screen: Orientation-reversing manifolds flip across the fixed point at each iteration,
-% hence, the computation stores both branches.
-if strcmp(manif.orientability,'orientation-reversing')
-    fprintf('\n----  Manifold is non-orientable. We will proceed computing both branches\n');
-    mapiter=2; % First "return" of the manifold occurs on iteration 2
-else
-    mapiter=1; % First "return" of the manifold occurs right away (on iteration 1)
-end
+    % if computing unstable manifold, use image
+    % if computing stable manifold, use preimage
+    if strcmp(manif.stability,'Smanifold')
+        sign = -1;
+    elseif strcmp(manif.stability,'Umanifold')
+        sign = 1;
+    end
 
-% Determining mapping direction: Forward mapping for Unstable manifolds ($W^u$),
-% backward mapping (inverse) for Stable manifolds ($W^s$)
-if strcmp(manif.stability,'Smanifold')
-    sign = -1; % Use inverse map ff_inv
-elseif strcmp(manif.stability,'Umanifold')
-    sign = 1; % Use forward map ff
-end
 
-% Establishing the names of primary and secondary branches based on init_step sign
-if manif.grow_info.init_step > 0
-    branch1 = 'pos';
-    branch2 = 'neg';
-else
-    branch1 = 'neg';
-    branch2 = 'pos';
-end
+    if manif.grow_info.init_step > 0
+        branch1='pos';
+        branch2='neg';
+    else
+        branch1='neg';
+        branch2='pos';
+    end
     
 
-%% HIGHER-DIMENSIONAL SUBSPACE HANDLING (MANIFOLD DIMENSION > 1)
-% This toolkit is optimized for 1D manifolds. If the fixed point 
-% has a higher dimensional manifolds (2D), the algorithm could anyway
-% compute a submanifold (1D) along a chosen real eigenvector on its 2D
-% manifold.
+    %% Warnings if the manifold we want to compute is not 1D
+    
+    if manif.grow_info.dimension>1
+        fprintf('\n----  The dimension of the manifold is %i and this algorithm is designed to compute one-dimensional manifolds. -----\n',manif.grow_info.dimension)
+        fprintf(' To choose automatically which of the two eigenvalues to use, include a second argument to GrowFundCurv1D(opts,#) where #: 1 or 2\n\n') 
+        fprintf('The eigenvectors are:\n')
 
-if manif.grow_info.dimension>1
-    fprintf('\n----  The dimension of the manifold is %i and this algorithm is designed to compute one-dimensional manifolds. -----\n',manif.grow_info.dimension)
-    fprintf(' To choose automatically which of the two eigenvalues to use, include a second argument to GrowFundCurv1D(opts,#) where #: 1 or 2\n\n') 
-    fprintf('The eigenvectors are:\n')
+        for i=1:manif.grow_info.dimension
+            fprintf('(%i) Eigenvalue: %.3f, Eigenvector: (%.3f, %.3f, %.3f)\n',i, manif.grow_info.eigval(i), manif.grow_info.eigvec(1,i),manif.grow_info.eigvec(2,i),manif.grow_info.eigvec(3,i))
+        end
 
-    for i=1:manif.grow_info.dimension
-        fprintf('(%i) Eigenvalue: %.3f, Eigenvector: (%.3f, %.3f, %.3f)\n',i, manif.grow_info.eigval(i), manif.grow_info.eigvec(1,i),manif.grow_info.eigvec(2,i),manif.grow_info.eigvec(3,i))
+        if ~isempty(eigenval_idx)
+            x = eigenval_idx;
+            fprintf('\nChoice: eigenval_idx = %i\n\n', eigenval_idx)
+        else
+            fprintf('\n Which eigenvector do you want to use?') 
+            prompt = "\n... Press 1 or 2\n... Press 0 in case you want to exit \n\n";
+            x = input(prompt);
+        end
+
+        if x == 0
+            return
+        else
+            manif.grow_info.eigval=manif.grow_info.eigval(x);
+            manif.grow_info.eigvec=manif.grow_info.eigvec(:,x);
+        end
+
     end
 
-    % Prompt the user for a selection if it wasn't provided as a function argument
-    if ~isempty(eigenval_idx)
-        x = eigenval_idx;
-        fprintf('\nChoice: eigenval_idx = %i\n\n', eigenval_idx)
-    else
-        fprintf('\n Which eigenvector do you want to use?') 
-        prompt = "\n... Press 1 or 2\n... Press 0 in case you want to exit \n\n";
-        x = input(prompt);
-    end
 
-    if x == 0
-        return
-    else
-        % Isolate the selected eigenvalue and its corresponding vector
-        manif.grow_info.eigval=manif.grow_info.eigval(x);
-        manif.grow_info.eigvec=manif.grow_info.eigvec(:,x);
-    end
-
-end
-
-
-%% DIAGNOSTIC PRINTING (RUN CONFIGURATION)
+%% Printing the general information of this run
 
     names=fieldnames(par);
     
@@ -124,15 +116,15 @@ end
     
     %-------------------------------------------------------------------
     %-------------------------------------------------------------------
-    % Initialize performance counters inside the runinfo structure
-    manif.grow_info.runinfo.rem_deltamin=0;     % Points dropped due to overcrowding (< deltamin)
-    manif.grow_info.runinfo.rem_nan=0;          % Points dropped due to numerical NaNs
-    manif.grow_info.runinfo.rem_inf=0;          % Points dropped at the boundary of compactified infinity
-    manif.grow_info.runinfo.add_alphamax=0;     % Points added via alpha_max
-    manif.grow_info.runinfo.add_deltamax=0;     % Points added via delta_max
-    manif.grow_info.runinfo.add_deltalphamax=0; % Points added via curvature condition (delta alpha)_max
+    % initializing the fields for the initial information
+    manif.grow_info.runinfo.rem_deltamin=0; %how many points are removed because of deltamin
+    manif.grow_info.runinfo.rem_nan=0; %how many points are removed because of NaN values
+    manif.grow_info.runinfo.rem_inf=0; %how many points are removed at infinity because of duplication
+    manif.grow_info.runinfo.add_alphamax=0; %how many points are added because of alpha_max
+    manif.grow_info.runinfo.add_deltamax=0;%how many points are added because of delta_max
+    manif.grow_info.runinfo.add_deltalphamax=0;  %how many points are added because of (delta alpha)_max
 
-%% GENERATE THE FIRST FUNDAMENTAL DOMAIN
+%% computes first fundamental domain
 
 % by default, we choose the eigenvector going to positive x
 if manif.grow_info.eigvec(1) < 0 % is it is going to negative x, then consider the other side
