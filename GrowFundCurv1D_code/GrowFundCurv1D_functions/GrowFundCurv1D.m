@@ -817,21 +817,13 @@ while iter < manif.grow_info.max_funditer && stop_arc ~= 1 && (stop_arc_branch2 
     %chop the manifold up to the desired arclength
     if fund.points.arc(end) > needed_arc
 
-        %erase duplicates (needed for spline fitting)
-        keep=find(diff(fund.points.arc)~=0);
-        fund.points.x=fund.points.x(keep);
-        fund.points.y=fund.points.y(keep);
-        fund.points.z=fund.points.z(keep);
-        fund.points.arc=fund.points.arc(keep);
-        pre_idx=pre_idx(keep);
-
-         idx_arc = find(fund.points.arc < needed_arc, 1, 'last'); %find last point that is less than the needed arc
+         idx_arc = find(arc_mappoints > needed_arc,1); %where we exceed the extra needed arc
 
          % chop the fund domain and the mappoints up to the needed arclength
-         fund.points.x = spline(fund.points.arc,fund.points.x,[fund.points.arc(1:idx_arc) needed_arc]);
-         fund.points.y = spline(fund.points.arc,fund.points.y,[fund.points.arc(1:idx_arc) needed_arc]);
-         fund.points.z = spline(fund.points.arc,fund.points.z,[fund.points.arc(1:idx_arc) needed_arc]);
-         fund.points.arc = arclength(fund.points);
+         fund.points.x = fund.points.x(1:idx_arc);
+         fund.points.y = fund.points.y(1:idx_arc);
+         fund.points.z = fund.points.z(1:idx_arc);
+         fund.points.arc = fund.points.arc(1:idx_arc);
          pre_idx = pre_idx(1:numel(fund.points.x)-1);
     end
 
