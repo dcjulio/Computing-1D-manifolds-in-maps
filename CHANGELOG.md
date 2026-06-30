@@ -1,3 +1,6 @@
+### What’s new in v3.0.1
+Fixed big in how to obtain specific arclength, not using splines anymore
+
 ### What’s new in v3.0.0
 Now, GrowFundCurv1D stores a pseudo-orbit for each mesh point in the manifold computation.
 
