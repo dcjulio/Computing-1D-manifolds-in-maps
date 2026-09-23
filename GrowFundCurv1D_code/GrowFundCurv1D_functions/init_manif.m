@@ -187,7 +187,7 @@ function [eigval, eigvec]=eigensystem(fixpoint,opts)
     
     %Transform the eigenvec to the xompaxtified coordinates
     eigvec=JTp*eigvecF;
-    eigvec=normc(eigvec); %normalize each column
+    eigvec = eigvec ./ vecnorm(eigvec); %normalize each column
 
 end
 
