@@ -134,6 +134,16 @@ end
 
 %% GENERATE THE FIRST FUNDAMENTAL DOMAIN
 
+% check if the fixed point has the manifold to compute
+if numel(manif.grow_info.eigvec)==0
+    if strcmp(manif.stability,'Smanifold')
+        fprintf('Error: This fixed point appears to be a repeller and it doesnt have a Stable manifold.\n');
+    else
+        fprintf('Error: This fixed point appears to be a attractor and it doesnt have an Unstable manifold.\n');
+    end
+    return
+end
+
 % by default, we choose the eigenvector going to positive x
 if manif.grow_info.eigvec(1) < 0 % is it is going to negative x, then consider the other side
     manif.grow_info.eigvec = -manif.grow_info.eigvec;
