@@ -1,3 +1,6 @@
+### What’s new in v3.0.3
+Added error handling for fixed points without stable or unstable manifolds.
+
 ### What’s new in v3.0.2
 Normalize eigenvectors using vecnorm function in init_manif.m: Instead of normc, updated to use vecnorm for better portability and handling complex numbers. Thanks Sam Doak and Natalia McAlister for noting this.
 
